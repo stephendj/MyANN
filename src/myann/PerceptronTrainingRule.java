@@ -8,6 +8,13 @@ public class PerceptronTrainingRule extends SingleLayerPerceptron {
 
     private static final double THRESHOLD = 0.01;
 
+    /**
+     *
+     * @param m_MaxIteration maximum epoch iteration, 0 for 
+     * @param m_Neuron neuron
+     * @param m_LearningRate learning rate [0..1]
+     * @param m_Momentum momentum
+     */
     public PerceptronTrainingRule(int m_MaxIteration, Neuron m_Neuron,
             double m_LearningRate, double m_Momentum) {
         super(m_MaxIteration, m_Neuron, m_LearningRate, m_Momentum);
@@ -30,6 +37,11 @@ public class PerceptronTrainingRule extends SingleLayerPerceptron {
         System.out.println("==================================\n");
     }
 
+    /**
+     *
+     * @param instances data train
+     * @throws Exception if classifier failed to build
+     */
     @Override
     public void buildClassifier(Instances instances) throws Exception {
         super.setInstances(instances);
