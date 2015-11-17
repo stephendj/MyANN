@@ -12,6 +12,11 @@ public class Neuron {
     private double m_BiasWeight;
     private ActivationFunction activationFunction;
 
+    /**
+     *
+     * @param afType activation type
+     * @param numInput the number of weight to be randomized
+     */
     public Neuron(String afType, int numInput) {
         Random random = new Random();
         m_BiasWeight = random.nextDouble();
@@ -27,6 +32,12 @@ public class Neuron {
         }
     }
 
+    /**
+     *
+     * @param afType activation type
+     * @param biasWeight bias weight
+     * @param weight list of neuron weights 
+     */
     public Neuron(String afType, double biasWeight, List<Double> weight) {
         m_BiasWeight = biasWeight;
         m_Weight.addAll(weight);
@@ -48,38 +59,75 @@ public class Neuron {
         return sum;
     }
 
+    /**
+     *
+     * @param instance the instance
+     * @return output from activation function
+     */
     public double calculateOutput(Instance instance) {
         return activationFunction.calculateOutput(calculateNetFunction(instance));
     }
 
+    /**
+     *
+     * @return list of weight
+     */
     public List<Double> getWeight() {
         return m_Weight;
     }
 
+    /**
+     *
+     * @param m_Weight list of weight
+     */
     public void setWeight(List<Double> m_Weight) {
         this.m_Weight = m_Weight;
     }
 
+    /**
+     *
+     * @return activation function
+     */
     public ActivationFunction getActivationFunction() {
         return activationFunction;
     }
 
+    /**
+     *
+     * @param activationFunction activation function
+     */
     public void setActivationFunction(ActivationFunction activationFunction) {
         this.activationFunction = activationFunction;
     }
 
+    /**
+     *
+     * @return bias value
+     */
     public double getBias() {
         return m_Bias;
     }
 
+    /**
+     *
+     * @param m_Bias bias value
+     */
     public void setBias(double m_Bias) {
         this.m_Bias = m_Bias;
     }
 
+    /**
+     *
+     * @return bias weight
+     */
     public double getBiasWeight() {
         return m_BiasWeight;
     }
 
+    /**
+     *
+     * @param m_BiasWeight bias weight
+     */
     public void setBiasWeight(double m_BiasWeight) {
         this.m_BiasWeight = m_BiasWeight;
     }
