@@ -1,4 +1,4 @@
-package myann;
+package myann.activationfunction;
 
 public class SigmoidFunction extends ActivationFunction {
 

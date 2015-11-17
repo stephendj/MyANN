@@ -1,4 +1,4 @@
-package myann;
+package myann.activationfunction;
 
 public abstract class ActivationFunction {
 

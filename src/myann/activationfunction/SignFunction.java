@@ -1,10 +1,10 @@
-package myann;
+package myann.activationfunction;
 
 public class SignFunction extends ActivationFunction {
 
     @Override
     public double calculateOutput(double net) {
-        return net >= 0 ? 1 : -1;
+        return Double.compare(net, 0) >= 0 ? 1 : -1;
     }
 
 }
