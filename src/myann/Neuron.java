@@ -1,5 +1,9 @@
 package myann;
 
+import myann.activationfunction.ActivationFunction;
+import myann.activationfunction.SignFunction;
+import myann.activationfunction.StepFunction;
+import myann.activationfunction.SigmoidFunction;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
