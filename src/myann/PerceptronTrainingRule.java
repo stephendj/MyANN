@@ -10,14 +10,19 @@ public class PerceptronTrainingRule extends SingleLayerPerceptron {
 
     /**
      *
-     * @param m_MaxIteration maximum epoch iteration, 0 for 
+     * @param m_MaxIteration maximum epoch iteration, 0 for not using maximum iteration
      * @param m_Neuron neuron
      * @param m_LearningRate learning rate [0..1]
      * @param m_Momentum momentum
      */
-    public PerceptronTrainingRule(int m_MaxIteration, Neuron m_Neuron,
-            double m_LearningRate, double m_Momentum) {
-        super(m_MaxIteration, m_Neuron, m_LearningRate, m_Momentum);
+    public PerceptronTrainingRule(int m_MaxIteration, double m_LearningRate, 
+            double m_Momentum, int numInput, String activationFunction) {
+        super(m_MaxIteration, new Neuron(activationFunction, numInput), m_LearningRate, m_Momentum);
+    }
+    
+    public PerceptronTrainingRule(int m_MaxIteration, double m_LearningRate, 
+            double m_Momentum, double biasWeight, List<Double> weights, String activationFunction) {
+        super(m_MaxIteration, new Neuron(activationFunction, biasWeight, weights), m_LearningRate, m_Momentum);
     }
 
     private void learning(Instances instances) {
