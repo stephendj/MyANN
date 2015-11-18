@@ -7,6 +7,7 @@ import myann.activationfunction.SigmoidFunction;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import myann.activationfunction.NoFunction;
 import weka.core.Instance;
 
 public class Neuron {
@@ -33,7 +34,9 @@ public class Neuron {
             activationFunction = new StepFunction();
         } else if (afType.equalsIgnoreCase("sigmoid")) {
             activationFunction = new SigmoidFunction();
-        }
+        } else if (afType.equalsIgnoreCase("no")) {
+            activationFunction = new NoFunction();
+        } 
     }
 
     /**
@@ -51,7 +54,9 @@ public class Neuron {
             activationFunction = new StepFunction();
         } else if (afType.equalsIgnoreCase("sigmoid")) {
             activationFunction = new SigmoidFunction();
-        }
+        } else if (afType.equalsIgnoreCase("no")) {
+            activationFunction = new NoFunction();
+        } 
     }
 
     private double calculateNetFunction(Instance instance) {
