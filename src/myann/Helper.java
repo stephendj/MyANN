@@ -115,14 +115,13 @@ public class Helper {
                     double biasWeight = 0;
                     List<Double> weights = new ArrayList<>(); 
                     weights.add(0.0); weights.add(0.0); weights.add(0.0);
-                    weights.add(0.0);
-                    Neuron neuron = new Neuron("sign", biasWeight, weights);
+                    //weights.add(0.0);
                     
                     double learningRate = 0.1;
                     double momentum = 0.2;
                     
-                    PerceptronTrainingRule PTR = new PerceptronTrainingRule(maxIteration, neuron
-                            , learningRate, momentum);
+                    PerceptronTrainingRule PTR = new PerceptronTrainingRule(maxIteration, 
+                            learningRate, momentum, biasWeight, weights, "sign" );
                     PTR.buildClassifier(data);
 
                     return PTR;
