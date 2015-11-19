@@ -1,14 +1,74 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package myann;
 
-/**
- *
- * @author Stephen
- */
-public class DeltaRuleBatch {
+import java.util.ArrayList;
+import java.util.List;
+import weka.core.Instances;
+
+public class DeltaRuleBatch extends SingleLayerPerceptron {
+    private static final double THRESHOLD = 0.01;
     
+    public DeltaRuleBatch(int m_MaxIteration, double m_LearningRate, double m_Momentum, int numInput) {
+        super(m_MaxIteration, new Neuron("no", numInput), m_LearningRate, m_Momentum);
+    }
+    
+    public DeltaRuleBatch(int m_MaxIteration, double m_LearningRate, 
+            double m_Momentum, double biasWeight, List<Double> weights) {
+        super(m_MaxIteration, new Neuron("no", biasWeight, weights), m_LearningRate, m_Momentum);
+    }
+    
+    private void learning(Instances instances) {
+        // 1 Epoch
+        List<Double> sumDeltaWeights = new ArrayList<>();
+        Double sumDeltaBiasWeight = 0.0;
+        
+        for (int i = 0; i < instances.numInstances(); ++i) {
+            List<Double> deltaWeights = super.calculateDeltaWeight(i);
+            double deltaBiasWeight = super.calculateDeltaBiasWeight(i);
+            if (i == 0) {
+                sumDeltaWeights = deltaWeights;
+                sumDeltaBiasWeight = deltaBiasWeight;
+            } else {
+                for (int j = 0; j< sumDeltaWeights.size(); ++j) {
+                    sumDeltaWeights.set(j, sumDeltaWeights.get(j) + deltaWeights.get(j));
+                }
+                sumDeltaBiasWeight += deltaBiasWeight;
+            }
+        }
+        super.updateWeights(sumDeltaWeights, sumDeltaBiasWeight);
+    }
+    
+    private void print1Epoch(int epoch) {
+        System.out.println("==================================");
+        System.out.println("Model Pembelajaran Epoch " + epoch + "\n");
+        super.printModel();
+        System.out.println("==================================\n");
+    }
+
+
+    @Override
+    public void buildClassifier(Instances instances) throws Exception {
+        super.setInstances(instances);
+        double mse = 1.0;
+        int iteration = 1;
+        if (super.getMaxIteration() == 0) {
+            while (Double.compare(mse, THRESHOLD) > 0 && Double.compare(mse, Double.POSITIVE_INFINITY) < 0 ) {
+                learning(instances);
+                print1Epoch(iteration);
+                mse = super.calculateMSE();
+                System.out.println("MSE: "+mse);
+                ++iteration;
+            }
+        } else { // stop if convergen before reaching max iteration
+            while (iteration <= super.getMaxIteration() && Double.compare(mse, THRESHOLD) > 0 
+                    && Double.compare(mse, Double.POSITIVE_INFINITY) < 0 ) {
+                learning(instances);
+                print1Epoch(iteration);
+                mse = super.calculateMSE();
+                System.out.println("MSE: "+mse);
+                ++iteration;
+            }
+        }
+        
+    }
 }
