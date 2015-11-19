@@ -18,6 +18,7 @@ public class Neuron {
     private ActivationFunction activationFunction;
     private double m_Output;
     
+    
     /**
      *
      * @param afType activation type
@@ -68,6 +69,15 @@ public class Neuron {
         sum += m_Bias * m_BiasWeight;
         return sum;
     }
+    
+    private double calculateNetFunction(List<Double> input) {
+        double sum = 0;
+        for (int i = 0; i < input.size() ; ++i) {
+            sum += input.get(i) * m_Weight.get(i);
+        }
+        sum += m_Bias * m_BiasWeight;
+        return sum;
+    }
 
     /**
      *
@@ -76,6 +86,15 @@ public class Neuron {
      */
     public void calculateOutput(Instance instance) {
         m_Output = activationFunction.calculateOutput(calculateNetFunction(instance));
+    }
+    
+    /**
+     *
+     * @param input the input
+     * @return output from activation function
+     */
+    public void calculateOutput(List<Double> input ) {
+        m_Output = activationFunction.calculateOutput(calculateNetFunction(input));
     }
 
     /**
