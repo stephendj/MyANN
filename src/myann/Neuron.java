@@ -16,7 +16,8 @@ public class Neuron {
     private double m_Bias = 1;
     private double m_BiasWeight;
     private ActivationFunction activationFunction;
-
+    private double m_Output;
+    
     /**
      *
      * @param afType activation type
@@ -73,8 +74,8 @@ public class Neuron {
      * @param instance the instance
      * @return output from activation function
      */
-    public double calculateOutput(Instance instance) {
-        return activationFunction.calculateOutput(calculateNetFunction(instance));
+    public void calculateOutput(Instance instance) {
+        m_Output = activationFunction.calculateOutput(calculateNetFunction(instance));
     }
 
     /**
@@ -139,5 +140,13 @@ public class Neuron {
      */
     public void setBiasWeight(double m_BiasWeight) {
         this.m_BiasWeight = m_BiasWeight;
+    }
+    
+    /**
+     *
+     * @return output
+     */
+    public double getOutput() {
+        return m_Output;
     }
 }

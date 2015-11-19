@@ -35,7 +35,8 @@ public abstract class SingleLayerPerceptron extends Classifier {
      * @return output from the instance
      */
     public double calculateOutput(Instance instance) {
-        return m_Neuron.calculateOutput(instance);
+        m_Neuron.calculateOutput(instance);
+        return m_Neuron.getOutput();
     }
     
     /**
@@ -44,7 +45,7 @@ public abstract class SingleLayerPerceptron extends Classifier {
      * @return delta bias weight
      */
     public double calculateDeltaBiasWeight(int idx) {
-        double error = m_Instances.instance(idx).classValue() - m_Neuron.calculateOutput(m_Instances.instance(idx));
+        double error = m_Instances.instance(idx).classValue() - calculateOutput(m_Instances.instance(idx));
         return m_LearningRate * m_Neuron.getBias() * error;
     }
     
@@ -55,7 +56,7 @@ public abstract class SingleLayerPerceptron extends Classifier {
      */
     public List<Double> calculateDeltaWeight(int idx) {
         List<Double> deltaWeights = new ArrayList<>();
-        double error = m_Instances.instance(idx).classValue() - m_Neuron.calculateOutput(m_Instances.instance(idx));
+        double error = m_Instances.instance(idx).classValue() - calculateOutput(m_Instances.instance(idx));
         for (int i = 0; i < m_Neuron.getWeight().size(); ++i) {
             double input = m_Instances.instance(idx).value(i);
             deltaWeights.add(m_LearningRate * input * error);
@@ -84,7 +85,7 @@ public abstract class SingleLayerPerceptron extends Classifier {
     public double calculateMSE() {
         double sum = 0;
         for (int i = 0; i < m_Instances.numInstances(); ++i) {
-            double error = m_Instances.instance(i).classValue() - m_Neuron.calculateOutput(m_Instances.instance(i));
+            double error = m_Instances.instance(i).classValue() - calculateOutput(m_Instances.instance(i));
             sum += Math.pow(error, 2);
         }
         return 0.5 * sum;
