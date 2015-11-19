@@ -100,8 +100,8 @@ public class Helper {
     }
 
     /**
-     * Build the classifier from dataset, allowed algorithms are naive bayes,
-     * ID3, J48
+     * Build the classifier from dataset, allowed algorithms are perceptron training rule,
+     * delta rule batch, delta rule incremental, multi layer perceptron
      *
      * @param data the dataset that will be trained
      * @param type choice of algorithm, can be naivebayes, id3, or j48
@@ -109,22 +109,29 @@ public class Helper {
      */
     public static Classifier buildClassifier(Instances data, String type) {
         try {
+            int maxIteration = 0;
+            double biasWeight = 0;
+            List<Double> weights = new ArrayList<>(); 
+            weights.add(0.0); weights.add(0.0); weights.add(0.0); weights.add(0.0);
+
+            double learningRate = 0.01;
+            double momentum = 0.2;
+                    
             switch (type.toLowerCase()) {
                 case "ptr":
-                    int maxIteration = 0;
-                    double biasWeight = 0;
-                    List<Double> weights = new ArrayList<>(); 
-                    weights.add(0.0); weights.add(0.0); weights.add(0.0);
-                    //weights.add(0.0);
-                    
-                    double learningRate = 0.1;
-                    double momentum = 0.2;
                     
                     PerceptronTrainingRule PTR = new PerceptronTrainingRule(maxIteration, 
                             learningRate, momentum, biasWeight, weights, "sign" );
                     PTR.buildClassifier(data);
 
                     return PTR;
+                    
+                case "dri":
+                    DeltaRuleIncremental DRI = new DeltaRuleIncremental (maxIteration, 
+                            learningRate, momentum, biasWeight, weights );
+                    DRI.buildClassifier(data);
+
+                    return DRI;
             }
         } catch (Exception ex) {
             Logger.getLogger(Helper.class.getName()).log(Level.SEVERE, null, ex);
