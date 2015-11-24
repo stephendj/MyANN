@@ -153,7 +153,7 @@ public class MultiLayerPerceptron extends Classifier {
             }
         }
     }
-
+    
     public List<List<Neuron>> getHiddenLayer() {
         return m_HiddenLayer;
     }
