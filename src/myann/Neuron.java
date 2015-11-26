@@ -98,6 +98,16 @@ public class Neuron {
     }
 
     /**
+     * print the model of neuron
+     */
+    public void printModel() {
+        System.out.println("w_bias : " + m_BiasWeight);
+        for (int i = 0; i < m_Weight.size(); ++i) {
+            System.out.println("w" + i + " : " + m_Weight.get(i));
+        }
+    }
+
+    /**
      *
      * @return list of weight
      */

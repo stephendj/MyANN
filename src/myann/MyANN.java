@@ -6,12 +6,12 @@ import weka.core.Instances;
 
 public class MyANN {
 
-    private static final String DATASET1 = "data/activity.arff";
+    private static final String DATASET1 = "data/dataset1.arff";
     
     public static void main(String[] args) {
         Instances instances = Helper.loadDataFromFile(DATASET1);
-        //Classifier classifierPTR = Helper.buildClassifier(instances, "ptr");
-        System.out.println(NominalConverter.nominalToBinary(instances, false));
+        Classifier classifierPTR = Helper.buildClassifier(instances, "mlp");
+//        System.out.println(NominalConverter.nominalToBinary(instances, false));
     }
 
 }

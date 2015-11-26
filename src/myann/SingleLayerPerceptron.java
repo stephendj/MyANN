@@ -91,7 +91,6 @@ public abstract class SingleLayerPerceptron extends Classifier {
         return 0.5 * sum;
     }
 
-
     /**
      * print the model of neuron
      */

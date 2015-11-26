@@ -111,10 +111,14 @@ public class Helper {
         try {
             int maxIteration = 0;
             double biasWeight = 0;
-            List<Double> weights = new ArrayList<>(); 
-            weights.add(0.0); weights.add(0.0); weights.add(0.0); weights.add(0.0);
+            List<Double> weights = new ArrayList<>();
+            weights.add(0.0); weights.add(0.0); weights.add(0.0);
+            
+            List<Double> outputWeights = new ArrayList<>(); 
+            outputWeights.add(0.0); outputWeights.add(0.0);
+//            weights.add(0.0);
 
-            double learningRate = 0.01;
+            double learningRate = 0.1;
             double momentum = 0.2;
                     
             switch (type.toLowerCase()) {
@@ -127,11 +131,37 @@ public class Helper {
                     return PTR;
                     
                 case "dri":
-                    DeltaRuleIncremental DRI = new DeltaRuleIncremental (maxIteration, 
+                    DeltaRuleIncremental DRI = new DeltaRuleIncremental(maxIteration, 
                             learningRate, momentum, biasWeight, weights );
                     DRI.buildClassifier(data);
 
                     return DRI;
+                    
+                case "drb":
+                    DeltaRuleBatch DRB = new DeltaRuleBatch(maxIteration, 
+                            learningRate, momentum, biasWeight, weights );
+                    DRB.buildClassifier(data);
+
+                    return DRB;
+                    
+                case "mlp":
+                    Neuron neuron1 = new Neuron("sigmoid", 0, weights);
+                    Neuron neuron2 = new Neuron("sigmoid", 0, weights);
+                    List<Neuron> neurons = new ArrayList<>();
+                    neurons.add(neuron1); neurons.add(neuron2);
+                    
+                    List<List<Neuron>> hiddenLayer = new ArrayList<>();
+                    hiddenLayer.add(neurons);
+                    
+                    Neuron outputNeuron = new Neuron("sigmoid", 0, outputWeights);
+                    List<Neuron> outputLayer = new ArrayList<>();
+                    outputLayer.add(outputNeuron);
+                    
+                    MultiLayerPerceptron MLP = new MultiLayerPerceptron(hiddenLayer, outputLayer, maxIteration, 
+                            learningRate, momentum, data);
+                    MLP.buildClassifier(data);
+
+                    return MLP;
             }
         } catch (Exception ex) {
             Logger.getLogger(Helper.class.getName()).log(Level.SEVERE, null, ex);
