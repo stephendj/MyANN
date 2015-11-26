@@ -11,11 +11,9 @@ import java.util.List;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import myann.activationfunction.ActivationFunction;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
-import weka.classifiers.bayes.NaiveBayes;
-import weka.classifiers.trees.Id3;
-import weka.classifiers.trees.J48;
 import weka.core.Instances;
 import weka.core.converters.ConverterUtils.DataSource;
 import weka.filters.Filter;
@@ -48,8 +46,6 @@ public class Helper {
                 data.setClassIndex(data.numAttributes() - 1);
             }
         } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         }
 
         return data;
@@ -100,65 +96,71 @@ public class Helper {
     }
 
     /**
-     * Build the classifier from dataset, allowed algorithms are perceptron training rule,
-     * delta rule batch, delta rule incremental, multi layer perceptron
+     * Build the classifier from dataset, allowed algorithms are perceptron
+     * training rule, delta rule batch, delta rule incremental, multi layer
+     * perceptron
      *
      * @param data the dataset that will be trained
-     * @param type choice of algorithm, can be naivebayes, id3, or j48
+     * @param type choice of algorithm, can be perceptron training rule, delta
+     * rule batch, delta rule incremental, or multi layer perceptron
      * @return
      */
     public static Classifier buildClassifier(Instances data, String type) {
         try {
-            int maxIteration = 0;
-            double biasWeight = 0;
-            List<Double> weights = new ArrayList<>();
-            weights.add(0.0); weights.add(0.0); weights.add(0.0);
-            
-            List<Double> outputWeights = new ArrayList<>(); 
-            outputWeights.add(0.0); outputWeights.add(0.0);
-//            weights.add(0.0);
-
+            int maxIteration = 10;
             double learningRate = 0.1;
             double momentum = 0.2;
-                    
+            double threshold = 0.01;
+
+            double biasWeight = 0;
+
+            List<Double> inputWeights = new ArrayList<>();
+            inputWeights.add(0.0);
+            inputWeights.add(0.0);
+            inputWeights.add(0.0);
+
             switch (type.toLowerCase()) {
                 case "ptr":
-                    
-                    PerceptronTrainingRule PTR = new PerceptronTrainingRule(maxIteration, 
-                            learningRate, momentum, biasWeight, weights, "sign" );
+                    PerceptronTrainingRule PTR = new PerceptronTrainingRule(maxIteration,
+                        learningRate, momentum, biasWeight, inputWeights, ActivationFunction.SIGN);
                     PTR.buildClassifier(data);
 
                     return PTR;
-                    
-                case "dri":
-                    DeltaRuleIncremental DRI = new DeltaRuleIncremental(maxIteration, 
-                            learningRate, momentum, biasWeight, weights );
-                    DRI.buildClassifier(data);
 
-                    return DRI;
-                    
                 case "drb":
-                    DeltaRuleBatch DRB = new DeltaRuleBatch(maxIteration, 
-                            learningRate, momentum, biasWeight, weights );
+                    DeltaRuleBatch DRB = new DeltaRuleBatch(maxIteration,
+                        learningRate, momentum, biasWeight, inputWeights);
                     DRB.buildClassifier(data);
 
                     return DRB;
-                    
+
+                case "dri":
+                    DeltaRuleIncremental DRI = new DeltaRuleIncremental(maxIteration,
+                        learningRate, momentum, biasWeight, inputWeights);
+                    DRI.buildClassifier(data);
+
+                    return DRI;
+
                 case "mlp":
-                    Neuron neuron1 = new Neuron("sigmoid", 0, weights);
-                    Neuron neuron2 = new Neuron("sigmoid", 0, weights);
-                    List<Neuron> neurons = new ArrayList<>();
-                    neurons.add(neuron1); neurons.add(neuron2);
-                    
-                    List<List<Neuron>> hiddenLayer = new ArrayList<>();
-                    hiddenLayer.add(neurons);
-                    
-                    Neuron outputNeuron = new Neuron("sigmoid", 0, outputWeights);
+                    Neuron hiddenNeuron1 = new Neuron(ActivationFunction.SIGMOID, 0, inputWeights);
+                    Neuron hiddenNeuron2 = new Neuron(ActivationFunction.SIGMOID, 0, inputWeights);
+                    List<Neuron> hiddenLayer1 = new ArrayList<>();
+                    hiddenLayer1.add(hiddenNeuron1);
+                    hiddenLayer1.add(hiddenNeuron2);
+
+                    List<List<Neuron>> hiddenLayers = new ArrayList<>();
+                    hiddenLayers.add(hiddenLayer1);
+
+                    List<Double> outputWeights = new ArrayList<>();
+                    outputWeights.add(0.0);
+                    outputWeights.add(0.0);
+
+                    Neuron outputNeuron = new Neuron(ActivationFunction.SIGMOID, 0, outputWeights);
                     List<Neuron> outputLayer = new ArrayList<>();
                     outputLayer.add(outputNeuron);
-                    
-                    MultiLayerPerceptron MLP = new MultiLayerPerceptron(hiddenLayer, outputLayer, maxIteration, 
-                            learningRate, momentum, data);
+
+                    MultiLayerPerceptron MLP = new MultiLayerPerceptron(hiddenLayers, outputLayer, data, maxIteration,
+                        learningRate, momentum, threshold);
                     MLP.buildClassifier(data);
 
                     return MLP;
@@ -187,8 +189,6 @@ public class Helper {
             System.out.println(eval.toClassDetailsString());
             System.out.println(eval.toMatrixString());
         } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         }
     }
 
@@ -233,7 +233,6 @@ public class Helper {
             classifier.buildClassifier(trainSet);
             testSetEvaluation(trainSet, classifier, testSet);
         } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
@@ -252,8 +251,6 @@ public class Helper {
             oos.flush();
             oos.close();
         } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         }
     }
 
@@ -273,14 +270,7 @@ public class Helper {
 
             ois.close();
         } catch (FileNotFoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        } catch (IOException | ClassNotFoundException e) {
         }
 
         return cls;
@@ -306,8 +296,6 @@ public class Helper {
                 System.out.println(labeled.instance(i));
             }
         } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         }
     }
 }
