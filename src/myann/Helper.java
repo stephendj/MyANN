@@ -121,22 +121,28 @@ public class Helper {
 
             switch (type.toLowerCase()) {
                 case "ptr":
+                    List<Neuron> neurons = new ArrayList<>();
+                    neurons.add(new Neuron(ActivationFunction.SIGN, biasWeight, inputWeights));
                     PerceptronTrainingRule PTR = new PerceptronTrainingRule(maxIteration,
-                        learningRate, momentum, biasWeight, inputWeights, ActivationFunction.SIGN);
+                        neurons, learningRate, momentum);
                     PTR.buildClassifier(data);
 
                     return PTR;
 
                 case "drb":
+                    neurons = new ArrayList<>();
+                    neurons.add(new Neuron(ActivationFunction.NONE, biasWeight, inputWeights));
                     DeltaRuleBatch DRB = new DeltaRuleBatch(maxIteration,
-                        learningRate, momentum, biasWeight, inputWeights);
+                        neurons, learningRate, momentum);
                     DRB.buildClassifier(data);
 
                     return DRB;
 
                 case "dri":
+                    neurons = new ArrayList<>();
+                    neurons.add(new Neuron(ActivationFunction.NONE, biasWeight, inputWeights));
                     DeltaRuleIncremental DRI = new DeltaRuleIncremental(maxIteration,
-                        learningRate, momentum, biasWeight, inputWeights);
+                        neurons, learningRate, momentum);
                     DRI.buildClassifier(data);
 
                     return DRI;

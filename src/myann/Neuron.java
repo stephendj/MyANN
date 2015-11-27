@@ -18,7 +18,6 @@ public class Neuron {
     private ActivationFunction activationFunction;
     private double m_Output;
     
-    
     /**
      *
      * @param afType activation type
@@ -56,7 +55,7 @@ public class Neuron {
             activationFunction = new StepFunction();
         } else if (afType.equalsIgnoreCase("sigmoid")) {
             activationFunction = new SigmoidFunction();
-        } else if (afType.equalsIgnoreCase("no")) {
+        } else if (afType.equalsIgnoreCase("none")) {
             activationFunction = new NoFunction();
         } 
     }

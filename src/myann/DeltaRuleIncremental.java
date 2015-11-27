@@ -7,20 +7,20 @@ import weka.core.Instances;
 public class DeltaRuleIncremental extends SingleLayerPerceptron {
     private static final double THRESHOLD = 0.01;
     
-    public DeltaRuleIncremental(int m_MaxIteration, double m_LearningRate, double m_Momentum, int numInput) {
-        super(m_MaxIteration, new Neuron("no", numInput), m_LearningRate, m_Momentum);
+    public DeltaRuleIncremental(int m_MaxIteration, List<Neuron> m_Neuron, double m_LearningRate, double m_Momentum) {
+        super(m_MaxIteration, m_Neuron, m_LearningRate, m_Momentum);
     }
     
-    public DeltaRuleIncremental(int m_MaxIteration, double m_LearningRate, 
-            double m_Momentum, double biasWeight, List<Double> weights) {
-        super(m_MaxIteration, new Neuron("no", biasWeight, weights), m_LearningRate, m_Momentum);
-    }
+//    public DeltaRuleIncremental(int m_MaxIteration, double m_LearningRate, 
+//            double m_Momentum, double biasWeight, List<Double> weights) {
+//        super(m_MaxIteration, new Neuron("no", biasWeight, weights), m_LearningRate, m_Momentum);
+//    }
     
     private void learning(Instances instances) {
         // 1 Epoch
         for (int i = 0; i < instances.numInstances(); ++i) {
-            List<Double> deltaWeights = super.calculateDeltaWeight(i);
-            double deltaBiasWeight = super.calculateDeltaBiasWeight(i);
+            List<List<Double>> deltaWeights = super.calculateDeltaWeight(i);
+            List<Double> deltaBiasWeight = super.calculateDeltaBiasWeight(i);
             super.updateWeights(deltaWeights, deltaBiasWeight);
         }
     }

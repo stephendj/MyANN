@@ -8,31 +8,33 @@ import weka.core.Instances;
 public class DeltaRuleBatch extends SingleLayerPerceptron {
     private static final double THRESHOLD = 0.01;
     
-    public DeltaRuleBatch(int m_MaxIteration, double m_LearningRate, double m_Momentum, int numInput) {
-        super(m_MaxIteration, new Neuron("no", numInput), m_LearningRate, m_Momentum);
+    public DeltaRuleBatch(int m_MaxIteration, List<Neuron> m_Neuron, double m_LearningRate, double m_Momentum) {
+        super(m_MaxIteration, m_Neuron, m_LearningRate, m_Momentum);
     }
     
-    public DeltaRuleBatch(int m_MaxIteration, double m_LearningRate, 
-            double m_Momentum, double biasWeight, List<Double> weights) {
-        super(m_MaxIteration, new Neuron("no", biasWeight, weights), m_LearningRate, m_Momentum);
-    }
+//    public DeltaRuleBatch(int m_MaxIteration, double m_LearningRate, 
+//            double m_Momentum, double biasWeight, List<Double> weights) {
+//        super(m_MaxIteration, new Neuron("no", biasWeight, weights), m_LearningRate, m_Momentum);
+//    }
     
     private void learning(Instances instances) {
         // 1 Epoch
-        List<Double> sumDeltaWeights = new ArrayList<>();
-        Double sumDeltaBiasWeight = 0.0;
+        List<List<Double>> sumDeltaWeights = new ArrayList<>();
+        List<Double> sumDeltaBiasWeight = new ArrayList<>();
         
         for (int i = 0; i < instances.numInstances(); ++i) {
-            List<Double> deltaWeights = super.calculateDeltaWeight(i);
-            double deltaBiasWeight = super.calculateDeltaBiasWeight(i);
+            List<List<Double>> deltaWeights = super.calculateDeltaWeight(i);
+            List<Double> deltaBiasWeight = super.calculateDeltaBiasWeight(i);
             if (i == 0) {
                 sumDeltaWeights = deltaWeights;
                 sumDeltaBiasWeight = deltaBiasWeight;
             } else {
-                for (int j = 0; j< sumDeltaWeights.size(); ++j) {
-                    sumDeltaWeights.set(j, sumDeltaWeights.get(j) + deltaWeights.get(j));
+                for (int j = 0; j < sumDeltaWeights.size(); ++j) {
+                    for(int k = 0; k < sumDeltaWeights.get(j).size(); ++k) {
+                        sumDeltaWeights.get(j).set(k, sumDeltaWeights.get(j).get(k) + deltaWeights.get(j).get(k));
+                    }
+                    sumDeltaBiasWeight.set(j, sumDeltaBiasWeight.get(j) + deltaBiasWeight.get(j));
                 }
-                sumDeltaBiasWeight += deltaBiasWeight;
             }
         }
         super.updateWeights(sumDeltaWeights, sumDeltaBiasWeight);
