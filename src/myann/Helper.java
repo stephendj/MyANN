@@ -109,12 +109,15 @@ public class Helper {
         try {
             int maxIteration = 10;
             double learningRate = 0.1;
-            double momentum = 0.2;
+            double momentum = 0.1;
             double threshold = 0.01;
 
             double biasWeight = 0;
 
             List<Double> inputWeights = new ArrayList<>();
+            inputWeights.add(0.0);
+            inputWeights.add(0.0);
+            inputWeights.add(0.0);
             inputWeights.add(0.0);
             inputWeights.add(0.0);
             inputWeights.add(0.0);
@@ -148,8 +151,19 @@ public class Helper {
                     return DRI;
 
                 case "mlp":
-                    Neuron hiddenNeuron1 = new Neuron(ActivationFunction.SIGMOID, 0, inputWeights);
-                    Neuron hiddenNeuron2 = new Neuron(ActivationFunction.SIGMOID, 0, inputWeights);
+                    List<Double> inputWeights1 = new ArrayList<>();
+                    inputWeights1.add(0.0);
+                    inputWeights1.add(0.0);
+                    inputWeights1.add(0.0);
+                    inputWeights1.add(0.0);
+                    List<Double> inputWeights2 = new ArrayList<>();
+                    inputWeights2.add(0.0);
+                    inputWeights2.add(0.0);
+                    inputWeights2.add(0.0);
+                    inputWeights2.add(0.0);
+
+                    Neuron hiddenNeuron1 = new Neuron(ActivationFunction.SIGMOID, 0, inputWeights1);
+                    Neuron hiddenNeuron2 = new Neuron(ActivationFunction.SIGMOID, 0, inputWeights2);
                     List<Neuron> hiddenLayer1 = new ArrayList<>();
                     hiddenLayer1.add(hiddenNeuron1);
                     hiddenLayer1.add(hiddenNeuron2);
