@@ -144,9 +144,9 @@ public abstract class SingleLayerPerceptron extends Classifier {
             } else { // nominal multiclass
                 for (int j = 0; j < m_Neuron.size(); ++j) {
                     if (j == m_Instances.instance(i).classIndex()) {
-                        error = 1 - m_Neuron.get(maxOutputIndex).getOutput();
+                        error = 1 - calculateOutput(m_Instances.instance(i)).get(maxOutputIndex);
                     } else {
-                        error = 0 - m_Neuron.get(maxOutputIndex).getOutput();
+                        error = 0 - calculateOutput(m_Instances.instance(i)).get(maxOutputIndex);
                     }
                 }
             }

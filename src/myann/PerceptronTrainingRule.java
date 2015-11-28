@@ -56,6 +56,7 @@ public class PerceptronTrainingRule extends SingleLayerPerceptron {
                 learning(instances);
                 print1Epoch(iteration);
                 error = super.calculateMSE();
+                System.out.println("mse : " + error);
                 ++iteration;
             }
         } else {
@@ -63,6 +64,7 @@ public class PerceptronTrainingRule extends SingleLayerPerceptron {
                 learning(instances);
                 print1Epoch(iteration);
                 error = super.calculateMSE();
+                System.out.println("mse : " + error);
                 ++iteration;
             }
         }
