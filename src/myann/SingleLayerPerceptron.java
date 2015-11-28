@@ -13,7 +13,7 @@ public abstract class SingleLayerPerceptron extends Classifier {
     private List<Neuron> m_Neuron;
     private double m_LearningRate;
     private double m_Momentum;
-
+    
     /**
      *
      * @param m_MaxIteration maximum iteration
@@ -48,14 +48,16 @@ public abstract class SingleLayerPerceptron extends Classifier {
     /**
      *
      * @param idx the index of the instance
+     * @param deltaBiasWeightPrev previous delta bias weight
      * @return delta bias weight
      */
-    public List<Double> calculateDeltaBiasWeight(int idx) {
+    public List<Double> calculateDeltaBiasWeight(int idx, List<Double> deltaBiasWeightPrev ) {
         List<Double> deltaBiasWeights = new ArrayList<>();
         // calculate error
         if (m_Instances.classAttribute().isNumeric() || m_Instances.classAttribute().numValues() == 2) {
             double error = m_Instances.instance(idx).classValue() - calculateOutput(m_Instances.instance(idx)).get(0);
-            deltaBiasWeights.add(m_LearningRate * m_Neuron.get(0).getBias() * error);
+            double deltaWeight = (m_LearningRate * m_Neuron.get(0).getBias() * error) + (getMomentum() * deltaBiasWeightPrev.get(0));
+            deltaBiasWeights.add(deltaWeight);
         } else { // nominal multiclass
             double error;
             for (int i = 0; i < m_Neuron.size(); ++i) {
@@ -64,19 +66,20 @@ public abstract class SingleLayerPerceptron extends Classifier {
                 } else {
                     error = 0 - m_Neuron.get(i).getOutput();
                 }
-                deltaBiasWeights.add(m_LearningRate * m_Neuron.get(i).getBias() * error);
+                double deltaWeight = (m_LearningRate * m_Neuron.get(i).getBias() * error) + (getMomentum() * deltaBiasWeightPrev.get(i));
+                deltaBiasWeights.add(deltaWeight);
             }
         }
-        
         return deltaBiasWeights;
     }
     
     /**
      *
      * @param idx the index of the instance
+     * @param deltaWeightPrev previous delta weight 
      * @return list of delta weight
      */
-    public List<List<Double>> calculateDeltaWeight(int idx) {
+    public List<List<Double>> calculateDeltaWeight(int idx, List<List<Double>> deltaWeightPrev) {
         List<List<Double>> deltaWeights = new ArrayList<>();
         
         if (m_Instances.classAttribute().isNumeric() || m_Instances.classAttribute().numValues() == 2) {
@@ -84,7 +87,8 @@ public abstract class SingleLayerPerceptron extends Classifier {
             List<Double> deltaWeightsPerNeuron = new ArrayList<>();
             for (int i = 0; i < m_Neuron.get(0).getWeight().size(); ++i) {
                 double input = m_Instances.instance(idx).value(i);
-                deltaWeightsPerNeuron.add(m_LearningRate * input * error);
+                double deltaWeight = (m_LearningRate * input * error) + (getMomentum() * deltaWeightPrev.get(0).get(i));
+                deltaWeightsPerNeuron.add(deltaWeight);
             }
             deltaWeights.add(deltaWeightsPerNeuron);
         } else { // nominal multiclass
@@ -98,7 +102,8 @@ public abstract class SingleLayerPerceptron extends Classifier {
                 List<Double> deltaWeightsPerNeuron = new ArrayList<>();
                 for (int j = 0; j < m_Neuron.get(i).getWeight().size(); ++j) {
                     double input = m_Instances.instance(idx).value(j);
-                    deltaWeightsPerNeuron.add(m_LearningRate * input * error);
+                    double deltaWeight = (m_LearningRate * input * error) + (getMomentum() * deltaWeightPrev.get(i).get(j));
+                    deltaWeightsPerNeuron.add(deltaWeight);
                 }
                 deltaWeights.add(deltaWeightsPerNeuron);
             }
