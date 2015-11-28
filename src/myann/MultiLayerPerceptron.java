@@ -118,16 +118,13 @@ public class MultiLayerPerceptron extends Classifier {
         List<Double> errorNow = new ArrayList<>();
 
         // calculate error
-        if (instance.classAttribute().isNumeric()) {
+        if (instance.classAttribute().isNumeric() || instance.classAttribute().numValues() == 2) {
             double error = m_OutputLayer.get(0).getOutput() * (1 - m_OutputLayer.get(0).getOutput()) * (instance.classValue() - m_OutputLayer.get(0).getOutput());
-            errorNow.add(error);
-        } else if (instance.classAttribute().numValues() == 2) { // nominal binary
-            double error = m_OutputLayer.get(0).getOutput() * (1 - m_OutputLayer.get(0).getOutput()) * (instance.classIndex() - m_OutputLayer.get(0).getOutput());
             errorNow.add(error);
         } else { // nominal multiclass
             double error;
             for (int i = 0; i < m_OutputLayer.size(); ++i) {
-                if (i == instance.classIndex()) {
+                if (Double.compare(i, instance.classValue()) == 0) {
                     error = m_OutputLayer.get(i).getOutput() * (1 - m_OutputLayer.get(i).getOutput()) * (1 - m_OutputLayer.get(i).getOutput());
                 } else {
                     error = m_OutputLayer.get(i).getOutput() * (1 - m_OutputLayer.get(i).getOutput()) * (0 - m_OutputLayer.get(i).getOutput());
@@ -334,7 +331,7 @@ public class MultiLayerPerceptron extends Classifier {
                 error = m_Instances.instance(n).classValue() - m_OutputLayer.get(maxOutputIndex).getOutput();
             } else { // nominal multiclass
                 for (int i = 0; i < m_OutputLayer.size(); ++i) {
-                    if (i == m_Instances.instance(n).classIndex()) {
+                    if (Double.compare(i, m_Instances.instance(n).classValue()) == 0) {
                         error = 1 - m_OutputLayer.get(maxOutputIndex).getOutput();
                     } else {
                         error = 0 - m_OutputLayer.get(maxOutputIndex).getOutput();

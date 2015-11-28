@@ -6,7 +6,7 @@ import weka.core.Instances;
 
 public class MyANN {
 
-    private static final String DATASET1 = "data/dataset2.arff";
+    private static final String DATASET1 = "data/irismini.arff";
     
     public static void main(String[] args) {
         Instances instances = Helper.loadDataFromFile(DATASET1);

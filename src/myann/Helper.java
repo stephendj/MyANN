@@ -12,12 +12,14 @@ import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import myann.activationfunction.ActivationFunction;
+import myann.nominalconverter.NominalConverter;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 import weka.core.Instances;
 import weka.core.converters.ConverterUtils.DataSource;
 import weka.filters.Filter;
 import weka.filters.supervised.instance.Resample;
+import weka.filters.unsupervised.attribute.Normalize;
 import weka.filters.unsupervised.attribute.Remove;
 
 public class Helper {
@@ -107,9 +109,9 @@ public class Helper {
      */
     public static Classifier buildClassifier(Instances data, String type) {
         try {
-            int maxIteration = 10;
+            int maxIteration = 2;
             double learningRate = 0.1;
-            double momentum = 0.1;
+            double momentum = 0.0;
             double threshold = 0.01;
 
             double biasWeight = 0;
@@ -119,12 +121,18 @@ public class Helper {
             inputWeights.add(0.0);
             inputWeights.add(0.0);
             inputWeights.add(0.0);
-            inputWeights.add(0.0);
-            inputWeights.add(0.0);
+            
+//            data = NominalConverter.nominalToNumeric(data);
+//            Normalize normalize = new Normalize();
+//            normalize.setInputFormat(data);
+//            data = Filter.useFilter(data, normalize);
+            System.out.println(data);
 
             switch (type.toLowerCase()) {
                 case "ptr":
                     List<Neuron> neurons = new ArrayList<>();
+                    neurons.add(new Neuron(ActivationFunction.SIGN, biasWeight, inputWeights));
+                    neurons.add(new Neuron(ActivationFunction.SIGN, biasWeight, inputWeights));
                     neurons.add(new Neuron(ActivationFunction.SIGN, biasWeight, inputWeights));
                     PerceptronTrainingRule PTR = new PerceptronTrainingRule(maxIteration,
                         neurons, learningRate, momentum);
@@ -143,6 +151,8 @@ public class Helper {
 
                 case "dri":
                     neurons = new ArrayList<>();
+                    neurons.add(new Neuron(ActivationFunction.NONE, biasWeight, inputWeights));
+                    neurons.add(new Neuron(ActivationFunction.NONE, biasWeight, inputWeights));
                     neurons.add(new Neuron(ActivationFunction.NONE, biasWeight, inputWeights));
                     DeltaRuleIncremental DRI = new DeltaRuleIncremental(maxIteration,
                         neurons, learningRate, momentum);
