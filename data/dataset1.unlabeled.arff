@@ -1,0 +1,11 @@
+@relation dataset1
+
+@attribute x1 REAL
+@attribute x2 REAL
+@attribute x3 REAL
+@attribute target REAL
+
+@data
+1,0,1,?
+0,-1,-1,?
+-1,-0.5,-1,?

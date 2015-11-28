@@ -49,7 +49,10 @@ public class DeltaRuleBatch extends SingleLayerPerceptron {
 
         for (int i = 0; i < instances.numInstances(); ++i) {
             List<List<Double>> deltaWeights = super.calculateDeltaWeight(i, deltaWeightPrev);
+            deltaWeightPrev = deltaWeights;
             List<Double> deltaBiasWeight = super.calculateDeltaBiasWeight(i, deltaBiasWeightPrev);
+            deltaBiasWeightPrev = deltaBiasWeight;
+            
             if (i == 0) {
                 sumDeltaWeights = deltaWeights;
                 sumDeltaBiasWeight = deltaBiasWeight;
@@ -62,16 +65,6 @@ public class DeltaRuleBatch extends SingleLayerPerceptron {
                 }
             }
         }
-
-        for (int i = 0; i < getNeuron().size(); ++i) {
-            for (int j = 0; j < getNeuron().get(i).getWeight().size(); ++j) {
-                sumDeltaWeights.get(i).set(j, sumDeltaWeights.get(i).get(j) + (getMomentum() * deltaWeightPrev.get(i).get(j)));
-            }
-            sumDeltaBiasWeight.set(i, sumDeltaBiasWeight.get(i) + (getMomentum() * deltaBiasWeightPrev.get(i)));
-        }
-        deltaWeightPrev = sumDeltaWeights;
-        deltaBiasWeightPrev = sumDeltaBiasWeight;
-
         super.updateWeights(sumDeltaWeights, sumDeltaBiasWeight);
     }
 
