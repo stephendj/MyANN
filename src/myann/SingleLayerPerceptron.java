@@ -5,6 +5,7 @@ import java.util.List;
 import weka.classifiers.Classifier;
 import weka.core.Instance;
 import weka.core.Instances;
+import weka.core.NoSupportForMissingValuesException;
 
 public abstract class SingleLayerPerceptron extends Classifier {
 
@@ -13,7 +14,7 @@ public abstract class SingleLayerPerceptron extends Classifier {
     private List<Neuron> m_Neuron;
     private double m_LearningRate;
     private double m_Momentum;
-    
+
     /**
      *
      * @param m_MaxIteration maximum iteration
@@ -36,22 +37,22 @@ public abstract class SingleLayerPerceptron extends Classifier {
      */
     public List<Double> calculateOutput(Instance instance) {
         List<Double> outputs = new ArrayList<>();
-        
-        for(Neuron neuron : m_Neuron) {
+
+        for (Neuron neuron : m_Neuron) {
             neuron.calculateOutput(instance);
             outputs.add(neuron.getOutput());
         }
-        
+
         return outputs;
     }
-    
+
     /**
      *
      * @param idx the index of the instance
      * @param deltaBiasWeightPrev previous delta bias weight
      * @return delta bias weight
      */
-    public List<Double> calculateDeltaBiasWeight(int idx, List<Double> deltaBiasWeightPrev ) {
+    public List<Double> calculateDeltaBiasWeight(int idx, List<Double> deltaBiasWeightPrev) {
         List<Double> deltaBiasWeights = new ArrayList<>();
         // calculate error
         if (m_Instances.classAttribute().isNumeric() || m_Instances.classAttribute().numValues() == 2) {
@@ -72,16 +73,16 @@ public abstract class SingleLayerPerceptron extends Classifier {
         }
         return deltaBiasWeights;
     }
-    
+
     /**
      *
      * @param idx the index of the instance
-     * @param deltaWeightPrev previous delta weight 
+     * @param deltaWeightPrev previous delta weight
      * @return list of delta weight
      */
     public List<List<Double>> calculateDeltaWeight(int idx, List<List<Double>> deltaWeightPrev) {
         List<List<Double>> deltaWeights = new ArrayList<>();
-        
+
         if (m_Instances.classAttribute().isNumeric() || m_Instances.classAttribute().numValues() == 2) {
             double error = m_Instances.instance(idx).classValue() - calculateOutput(m_Instances.instance(idx)).get(0);
             List<Double> deltaWeightsPerNeuron = new ArrayList<>();
@@ -108,7 +109,7 @@ public abstract class SingleLayerPerceptron extends Classifier {
                 deltaWeights.add(deltaWeightsPerNeuron);
             }
         }
-        
+
         return deltaWeights;
     }
 
@@ -118,7 +119,7 @@ public abstract class SingleLayerPerceptron extends Classifier {
      * @param deltaBiasWeight delta of bias weight
      */
     public void updateWeights(List<List<Double>> deltaWeights, List<Double> deltaBiasWeight) {
-        for(int i = 0; i < m_Neuron.size(); ++i) {
+        for (int i = 0; i < m_Neuron.size(); ++i) {
             List<Double> newWeight = new ArrayList<>();
             for (int j = 0; j < m_Neuron.get(i).getWeight().size(); ++j) {
                 newWeight.add(m_Neuron.get(i).getWeight().get(j) + deltaWeights.get(i).get(j));
@@ -127,13 +128,14 @@ public abstract class SingleLayerPerceptron extends Classifier {
             m_Neuron.get(i).setBiasWeight(m_Neuron.get(i).getBiasWeight() + deltaBiasWeight.get(i));
         }
     }
+
     /**
      *
      * @return mean square error for 1 epoch
      */
     public double calculateMSE() {
         double sum = 0;
-        
+
         int maxOutputIndex = 0;
         for (int i = 1; i < m_Neuron.size(); ++i) {
             if (m_Neuron.get(i).getOutput() > m_Neuron.get(maxOutputIndex).getOutput()) {
@@ -141,9 +143,9 @@ public abstract class SingleLayerPerceptron extends Classifier {
             }
         }
         for (int i = 0; i < m_Instances.numInstances(); ++i) {
-            
+
             double error = 0;
-            
+
             if (m_Instances.classAttribute().isNumeric() || m_Instances.classAttribute().numValues() == 2) {
                 error = m_Instances.instance(i).classValue() - calculateOutput(m_Instances.instance(i)).get(maxOutputIndex);
             } else { // nominal multiclass
@@ -155,17 +157,45 @@ public abstract class SingleLayerPerceptron extends Classifier {
                     }
                 }
             }
-            
+
             sum += Math.pow(error, 2);
         }
         return 0.5 * sum;
     }
 
     /**
+     *
+     * @param instance the instance to be classified
+     * @return the classification
+     * @throws NoSupportForMissingValuesException
+     */
+    @Override
+    public double classifyInstance(Instance instance)
+            throws NoSupportForMissingValuesException {
+
+        if (instance.hasMissingValue()) {
+            throw new NoSupportForMissingValuesException("Single Layer Perceptron: Cannot handle missing values");
+        }
+
+        List<Double> output = calculateOutput(instance);
+        int indexMax = 0;
+        for (int i = 1; i < output.size(); ++i) {
+            if (output.get(i) > output.get(indexMax)) {
+                indexMax = i;
+            }
+        }
+        if (instance.classAttribute().isNumeric()) {
+            return output.get(indexMax);
+        } else {
+            return indexMax;
+        }
+    }
+
+    /**
      * print the model of neuron
      */
     public void printModel() {
-        for(int i = 0; i < m_Neuron.size(); ++i) {
+        for (int i = 0; i < m_Neuron.size(); ++i) {
             System.out.println("Neuron " + i);
             System.out.println("w_bias : " + m_Neuron.get(i).getBiasWeight());
             for (int j = 0; j < m_Neuron.get(i).getWeight().size(); ++j) {
