@@ -376,9 +376,9 @@ public class MultiLayerPerceptron extends Classifier {
             return m_OutputLayer.get(maxOutputIndex).getOutput();
         } else if (instance.classAttribute().numValues() == 2) { // nominal binary
             if (Double.compare(m_OutputLayer.get(maxOutputIndex).getOutput(), 0.5) >= 0) {
-                return m_OutputLayer.get(maxOutputIndex).getOutput();
+                return 1;
             } else {
-                return m_OutputLayer.get(maxOutputIndex).getOutput();
+                return 0;
             }
         } else { // nominal multiclass
             return maxOutputIndex;
