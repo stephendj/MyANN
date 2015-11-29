@@ -5,6 +5,7 @@ import java.util.List;
 import weka.classifiers.Classifier;
 import weka.core.Instance;
 import weka.core.Instances;
+import weka.core.NoSupportForMissingValuesException;
 
 public class MultiLayerPerceptron extends Classifier {
 
@@ -67,19 +68,20 @@ public class MultiLayerPerceptron extends Classifier {
 
     @Override
     public void buildClassifier(Instances instances) throws Exception {
-        double mse = m_Threshold;
+        double mse = Double.MAX_VALUE;
         int epoch = 1;
-        while (m_MaxIteration == 0 && mse < m_Threshold || epoch <= m_MaxIteration) {
-            System.out.println("Epoch " + epoch);
+        while (m_MaxIteration == 0 && mse > m_Threshold
+            || mse > m_Threshold && epoch <= m_MaxIteration
+            || Double.compare(mse, Double.POSITIVE_INFINITY) >= 0) {
 
             for (int i = 0; i < instances.numInstances(); ++i) {
                 forwardChaining(instances.instance(i));
                 backwardPropagation(instances.instance(i));
             }
 
+            print1Epoch(epoch);
             mse = calculateMSE();
-            System.out.println("mse: " + mse);
-
+            System.out.println("MSE: " + mse);
             ++epoch;
         }
     }
@@ -92,24 +94,22 @@ public class MultiLayerPerceptron extends Classifier {
                 }
             } else {
                 for (int j = 0; j < m_HiddenLayer.get(i).size(); ++j) {
-                    List<Double> input = new ArrayList<>();
+                    List<Double> inputs = new ArrayList<>();
                     for (int k = 0; k < m_HiddenLayer.get(i - 1).size(); ++k) { // previous hidden layer
-                        input.add(m_HiddenLayer.get(i - 1).get(k).getOutput());
+                        inputs.add(m_HiddenLayer.get(i - 1).get(k).getOutput());
                     }
-                    m_HiddenLayer.get(i).get(j).calculateOutput(input);
+                    m_HiddenLayer.get(i).get(j).calculateOutput(inputs);
                 }
             }
         }
 
-        //output layer
+        // output layer
         for (int j = 0; j < m_OutputLayer.size(); ++j) {
             List<Double> input = new ArrayList<>();
             for (int k = 0; k < m_HiddenLayer.get(m_HiddenLayer.size() - 1).size(); ++k) { // last hidden layer
                 input.add(m_HiddenLayer.get(m_HiddenLayer.size() - 1).get(k).getOutput());
             }
             m_OutputLayer.get(j).calculateOutput(input);
-
-            System.out.println("output: " + m_OutputLayer.get(j).getOutput());
         }
     }
 
@@ -295,7 +295,7 @@ public class MultiLayerPerceptron extends Classifier {
         // search for maximum output index
         int maxOutputIndex = 0;
         for (int i = 1; i < m_OutputLayer.size(); ++i) {
-            if (m_OutputLayer.get(i).getOutput() > m_OutputLayer.get(maxOutputIndex).getOutput()) {
+            if (Double.compare(m_OutputLayer.get(i).getOutput(), m_OutputLayer.get(maxOutputIndex).getOutput()) > 0) {
                 maxOutputIndex = i;
             }
         }
@@ -340,27 +340,85 @@ public class MultiLayerPerceptron extends Classifier {
             }
 
             mse += Math.pow(error, 2);
-            System.out.println("error: " + error);
         }
         mse *= 0.5;
 
         return mse;
     }
 
+    /**
+     *
+     * @param instance the instance to be classified
+     * @return the classification
+     * @throws NoSupportForMissingValuesException
+     */
+    @Override
+    public double classifyInstance(Instance instance)
+        throws NoSupportForMissingValuesException {
+
+        if (instance.hasMissingValue()) {
+            throw new NoSupportForMissingValuesException("Multi Layer Perceptron: Cannot handle missing values");
+        }
+
+        forwardChaining(instance);
+
+        // search for maximum output index
+        int maxOutputIndex = 0;
+        for (int i = 1; i < m_OutputLayer.size(); ++i) {
+            if (Double.compare(m_OutputLayer.get(i).getOutput(), m_OutputLayer.get(maxOutputIndex).getOutput()) > 0) {
+                maxOutputIndex = i;
+            }
+        }
+        System.out.println("maxoutputindex " + maxOutputIndex);
+
+        // classify instance
+        if (instance.classAttribute().isNumeric()) {
+            return m_OutputLayer.get(maxOutputIndex).getOutput();
+        } else if (instance.classAttribute().numValues() == 2) { // nominal binary
+            if (Double.compare(m_OutputLayer.get(maxOutputIndex).getOutput(), 0.5) >= 0) {
+                return m_OutputLayer.get(maxOutputIndex).getOutput();
+            } else {
+                return m_OutputLayer.get(maxOutputIndex).getOutput();
+            }
+        } else { // nominal multiclass
+            return maxOutputIndex;
+        }
+    }
+
+    private void print1Epoch(int epoch) {
+        System.out.println("==================================");
+        System.out.println("Model Pembelajaran Epoch " + epoch + "\n");
+        printModel();
+        System.out.println("==================================\n");
+    }
+
+    /**
+     * print the model of neuron
+     */
+    public void printModel() {
+        for (int i = 0; i < m_OutputLayer.size(); ++i) {
+            System.out.println("Neuron " + i);
+            System.out.println("w_bias : " + m_OutputLayer.get(i).getBiasWeight());
+            for (int j = 0; j < m_OutputLayer.get(i).getWeight().size(); ++j) {
+                System.out.println("w" + j + " : " + m_OutputLayer.get(i).getWeight().get(j));
+            }
+        }
+    }
+
     public void printNewBiasWeight(double newBiasWeight) {
-        System.out.println("newBiasWeight: " + newBiasWeight);
+//        System.out.println("newBiasWeight: " + newBiasWeight);
     }
 
     public void printNewWeights(List<Double> newWeights) {
-        for (int i = 0; i < newWeights.size(); ++i) {
-            System.out.println("newWeights " + i + ": " + newWeights.get(i));
-        }
+//        for (int i = 0; i < newWeights.size(); ++i) {
+//            System.out.println("newWeights " + i + ": " + newWeights.get(i));
+//        }
     }
 
     public void printErrorNow(List<Double> errorNow) {
-        for (int i = 0; i < errorNow.size(); ++i) {
-            System.out.println("errorNow " + i + ": " + errorNow.get(i));
-        }
+//        for (int i = 0; i < errorNow.size(); ++i) {
+//            System.out.println("errorNow " + i + ": " + errorNow.get(i));
+//        }
     }
 
     public List<List<Neuron>> getHiddenLayer() {
