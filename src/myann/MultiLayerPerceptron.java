@@ -81,7 +81,7 @@ public class MultiLayerPerceptron extends Classifier {
 
             print1Epoch(epoch);
             mse = calculateMSE();
-            System.out.println("MSE: " + mse);
+            System.out.println("MSE : " + mse);
             ++epoch;
         }
     }
@@ -396,8 +396,18 @@ public class MultiLayerPerceptron extends Classifier {
      * print the model of neuron
      */
     public void printModel() {
+        for (int i = 0; i < m_HiddenLayer.size(); ++i) {
+            for (int j = 0; j < m_HiddenLayer.get(i).size(); ++j) {
+                System.out.println("Hidden Layer " + i + ", Neuron " + j);
+                System.out.println("w_bias : " + m_HiddenLayer.get(i).get(j).getBiasWeight());
+                for (int k = 0; k < m_HiddenLayer.get(i).get(j).getWeight().size(); ++k) {
+                    System.out.println("w" + k + " : " + m_HiddenLayer.get(i).get(j).getWeight().get(k));
+                }
+            }
+        }
+
         for (int i = 0; i < m_OutputLayer.size(); ++i) {
-            System.out.println("Neuron " + i);
+            System.out.println("Output Layer Neuron " + i);
             System.out.println("w_bias : " + m_OutputLayer.get(i).getBiasWeight());
             for (int j = 0; j < m_OutputLayer.get(i).getWeight().size(); ++j) {
                 System.out.println("w" + j + " : " + m_OutputLayer.get(i).getWeight().get(j));
