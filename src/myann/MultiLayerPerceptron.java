@@ -16,6 +16,11 @@ public class MultiLayerPerceptron extends Classifier {
     private double m_Momentum;
     private double m_Threshold;
 
+    private List<List<List<Double>>> prevHiddenDeltaWeights = new ArrayList<>();
+    private List<List<Double>> prevHiddenDeltaBiasWeights = new ArrayList<>();
+    private List<List<Double>> prevOutputDeltaWeights = new ArrayList<>();
+    private List<Double> prevOutputDeltaBiasWeights = new ArrayList<>();
+
     public MultiLayerPerceptron(List<List<Neuron>> hiddenLayer,
         List<Neuron> outputLayer, Instances m_Instances, int m_MaxIteration, double m_LearningRate, double m_Momentum, double m_Threshold) {
         this.m_HiddenLayer = hiddenLayer;
@@ -25,6 +30,39 @@ public class MultiLayerPerceptron extends Classifier {
         this.m_LearningRate = m_LearningRate;
         this.m_Momentum = m_Momentum;
         this.m_Threshold = m_Threshold;
+
+        // initialize previous delta weights and previous delta bias weights
+        for (int i = 0; i < m_HiddenLayer.size(); ++i) {
+            List<List<Double>> tHiddenDeltaWeights = new ArrayList<>();
+            for (int j = 0; j < m_HiddenLayer.get(i).size(); ++j) {
+                List<Double> ttHiddenDeltaWeights = new ArrayList<>();
+                for (int k = 0; k < m_HiddenLayer.get(i).get(j).getWeight().size(); ++k) {
+                    ttHiddenDeltaWeights.add(0.0);
+                }
+                tHiddenDeltaWeights.add(ttHiddenDeltaWeights);
+            }
+            prevHiddenDeltaWeights.add(tHiddenDeltaWeights);
+        }
+
+        for (int i = 0; i < m_HiddenLayer.size(); ++i) {
+            List<Double> tHiddenDeltaBiasWeights = new ArrayList<>();
+            for (int j = 0; j < m_HiddenLayer.get(i).size(); ++j) {
+                tHiddenDeltaBiasWeights.add(0.0);
+            }
+            prevHiddenDeltaBiasWeights.add(tHiddenDeltaBiasWeights);
+        }
+
+        for (int i = 0; i < m_OutputLayer.size(); ++i) {
+            List<Double> tOutputDeltaWeights = new ArrayList<>();
+            for (int j = 0; j < m_OutputLayer.get(i).getWeight().size(); ++j) {
+                tOutputDeltaWeights.add(0.0);
+            }
+            prevOutputDeltaWeights.add(tOutputDeltaWeights);
+        }
+
+        for (int i = 0; i < m_OutputLayer.size(); ++i) {
+            prevOutputDeltaBiasWeights.add(0.0);
+        }
     }
 
     @Override
@@ -80,16 +118,13 @@ public class MultiLayerPerceptron extends Classifier {
         List<Double> errorNow = new ArrayList<>();
 
         // calculate error
-        if (instance.classAttribute().isNumeric()) {
+        if (instance.classAttribute().isNumeric() || instance.classAttribute().numValues() == 2) {
             double error = m_OutputLayer.get(0).getOutput() * (1 - m_OutputLayer.get(0).getOutput()) * (instance.classValue() - m_OutputLayer.get(0).getOutput());
-            errorNow.add(error);
-        } else if (instance.classAttribute().numValues() == 2) { // nominal binary
-            double error = m_OutputLayer.get(0).getOutput() * (1 - m_OutputLayer.get(0).getOutput()) * (instance.classIndex() - m_OutputLayer.get(0).getOutput());
             errorNow.add(error);
         } else { // nominal multiclass
             double error;
             for (int i = 0; i < m_OutputLayer.size(); ++i) {
-                if (i == instance.classIndex()) {
+                if (Double.compare(i, instance.classValue()) == 0) {
                     error = m_OutputLayer.get(i).getOutput() * (1 - m_OutputLayer.get(i).getOutput()) * (1 - m_OutputLayer.get(i).getOutput());
                 } else {
                     error = m_OutputLayer.get(i).getOutput() * (1 - m_OutputLayer.get(i).getOutput()) * (0 - m_OutputLayer.get(i).getOutput());
@@ -105,14 +140,22 @@ public class MultiLayerPerceptron extends Classifier {
         for (int j = 0; j < m_OutputLayer.size(); j++) {
             List<Double> newWeights = new ArrayList<>();
             for (int k = 0; k < m_HiddenLayer.get(m_HiddenLayer.size() - 1).size(); k++) {
-                double newWeight = m_OutputLayer.get(j).getWeight().get(k) + m_LearningRate * errorNow.get(j) * m_HiddenLayer.get(m_HiddenLayer.size() - 1).get(k).getOutput();
+                double deltaWeight = m_LearningRate * errorNow.get(j) * m_HiddenLayer.get(m_HiddenLayer.size() - 1).get(k).getOutput()
+                    + m_Momentum * prevOutputDeltaWeights.get(j).get(k);
+                double newWeight = m_OutputLayer.get(j).getWeight().get(k)
+                    + deltaWeight;
                 newWeights.add(newWeight);
+                prevOutputDeltaWeights.get(j).set(k, deltaWeight);
             }
             m_OutputLayer.get(j).setWeight(newWeights);
 
-            // update biasWeight
-            double newBiasWeight = m_OutputLayer.get(j).getBiasWeight() + m_LearningRate * errorNow.get(j) * m_OutputLayer.get(j).getBias();
+            // update biasWeight outputLayer
+            double deltaBiasWeight = m_LearningRate * errorNow.get(j) * m_OutputLayer.get(j).getBias()
+                + m_Momentum * prevOutputDeltaBiasWeights.get(j);
+            double newBiasWeight = m_OutputLayer.get(j).getBiasWeight()
+                + deltaBiasWeight;
             m_OutputLayer.get(j).setBiasWeight(newBiasWeight);
+            prevOutputDeltaBiasWeights.set(j, deltaBiasWeight);
 
             // print newWeights
             printNewWeights(newWeights);
@@ -133,12 +176,15 @@ public class MultiLayerPerceptron extends Classifier {
                     error *= outputNeuron * (1 - outputNeuron);
                     errorNow.add(error);
 
-                    //update weight
+                    // update weights
                     List<Double> newWeights = new ArrayList<>();
                     for (int k = 0; k < m_HiddenLayer.get(i).get(j).getWeight().size(); k++) {
+                        double deltaWeight = m_LearningRate * error * instance.value(k)
+                            + m_Momentum * prevHiddenDeltaWeights.get(i).get(j).get(k);
                         double newWeight = m_HiddenLayer.get(i).get(j).getWeight().get(k)
-                            + m_LearningRate * error * instance.value(k);
+                            + deltaWeight;
                         newWeights.add(newWeight);
+                        prevHiddenDeltaWeights.get(i).get(j).set(k, deltaWeight);
                     }
 
                     // print newWeights
@@ -157,12 +203,15 @@ public class MultiLayerPerceptron extends Classifier {
                     error *= outputNeuron * (1 - outputNeuron);
                     errorNow.add(error);
 
-                    //update weight
+                    // update weights
                     List<Double> newWeights = new ArrayList<>();
                     for (int k = 0; k < m_HiddenLayer.get(i).get(j).getWeight().size(); k++) {
+                        double deltaWeight = m_LearningRate * error * m_HiddenLayer.get(i - 1).get(k).getOutput()
+                            + m_Momentum * prevHiddenDeltaWeights.get(i).get(j).get(k);
                         double newWeight = m_HiddenLayer.get(i).get(j).getWeight().get(k)
-                            + m_LearningRate * error * m_HiddenLayer.get(i - 1).get(k).getOutput();
+                            + deltaWeight;
                         newWeights.add(newWeight);
+                        prevHiddenDeltaWeights.get(i).get(j).set(k, deltaWeight);
                     }
 
                     // print newWeights
@@ -180,12 +229,15 @@ public class MultiLayerPerceptron extends Classifier {
                     error *= outputNeuron * (1 - outputNeuron);
                     errorNow.add(error);
 
-                    //update weight
+                    // update weights
                     List<Double> newWeights = new ArrayList<>();
                     for (int k = 0; k < m_HiddenLayer.get(i).get(j).getWeight().size(); k++) {
+                        double deltaWeight = m_LearningRate * error * instance.value(k)
+                            + m_Momentum * prevHiddenDeltaWeights.get(i).get(j).get(k);
                         double newWeight = m_HiddenLayer.get(i).get(j).getWeight().get(k)
-                            + m_LearningRate * error * instance.value(k);
+                            + deltaWeight;
                         newWeights.add(newWeight);
+                        prevHiddenDeltaWeights.get(i).get(j).set(k, deltaWeight);
                     }
 
                     // print newWeights
@@ -203,12 +255,15 @@ public class MultiLayerPerceptron extends Classifier {
                     error *= outputNeuron * (1 - outputNeuron);
                     errorNow.add(error);
 
-                    //update weight
+                    // update weights
                     List<Double> newWeights = new ArrayList<>();
                     for (int k = 0; k < m_HiddenLayer.get(i).get(j).getWeight().size(); k++) {
+                        double deltaWeight = m_LearningRate * error * m_HiddenLayer.get(i - 1).get(k).getOutput()
+                            + m_Momentum * prevHiddenDeltaWeights.get(i).get(j).get(k);
                         double newWeight = m_HiddenLayer.get(i).get(j).getWeight().get(k)
-                            + m_LearningRate * error * m_HiddenLayer.get(i - 1).get(k).getOutput();
+                            + deltaWeight;
                         newWeights.add(newWeight);
+                        prevHiddenDeltaWeights.get(i).get(j).set(k, deltaWeight);
                     }
 
                     // print newWeights
@@ -220,8 +275,13 @@ public class MultiLayerPerceptron extends Classifier {
 
             // update biasWeight
             for (int j = 0; j < m_HiddenLayer.get(i).size(); j++) {
-                double newBiasWeight = m_HiddenLayer.get(i).get(j).getBiasWeight() + m_LearningRate * errorNow.get(j) * m_HiddenLayer.get(i).get(j).getBias();
+                double deltaBiasWeight = m_LearningRate * errorNow.get(j) * m_HiddenLayer.get(i).get(j).getBias()
+                    + m_Momentum * prevHiddenDeltaBiasWeights.get(i).get(j);
+                double newBiasWeight = m_HiddenLayer.get(i).get(j).getBiasWeight()
+                    + deltaBiasWeight;
                 m_HiddenLayer.get(i).get(j).setBiasWeight(newBiasWeight);
+                prevHiddenDeltaBiasWeights.get(i).set(j, deltaBiasWeight);
+
                 printNewBiasWeight(newBiasWeight);
             }
 
@@ -271,14 +331,14 @@ public class MultiLayerPerceptron extends Classifier {
                 error = m_Instances.instance(n).classValue() - m_OutputLayer.get(maxOutputIndex).getOutput();
             } else { // nominal multiclass
                 for (int i = 0; i < m_OutputLayer.size(); ++i) {
-                    if (i == m_Instances.instance(n).classIndex()) {
+                    if (Double.compare(i, m_Instances.instance(n).classValue()) == 0) {
                         error = 1 - m_OutputLayer.get(maxOutputIndex).getOutput();
                     } else {
                         error = 0 - m_OutputLayer.get(maxOutputIndex).getOutput();
                     }
                 }
             }
-             
+
             mse += Math.pow(error, 2);
             System.out.println("error: " + error);
         }

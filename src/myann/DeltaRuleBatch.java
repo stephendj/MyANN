@@ -7,10 +7,10 @@ import weka.core.Instances;
 public class DeltaRuleBatch extends SingleLayerPerceptron {
 
     private static final double INITIAL_DELTA_WEIGHT = 0.0;
-    private static final double THRESHOLD = 0.01;
 
     private List<Double> deltaBiasWeightPrev;  //update per epoch
     private List<List<Double>> deltaWeightPrev; //update per epoch
+    private double m_Threshold;
 
     /**
      *
@@ -19,8 +19,9 @@ public class DeltaRuleBatch extends SingleLayerPerceptron {
      * @param m_LearningRate learning rate [0..1]
      * @param m_Momentum momentum [0..1]
      */
-    public DeltaRuleBatch(int m_MaxIteration, List<Neuron> m_Neuron, double m_LearningRate, double m_Momentum) {
+    public DeltaRuleBatch(int m_MaxIteration, List<Neuron> m_Neuron, double m_LearningRate, double m_Momentum, double m_Threshold) {
         super(m_MaxIteration, m_Neuron, m_LearningRate, m_Momentum);
+        this.m_Threshold = m_Threshold;
     }
 
 //    public DeltaRuleBatch(int m_MaxIteration, double m_LearningRate, 
@@ -88,7 +89,7 @@ public class DeltaRuleBatch extends SingleLayerPerceptron {
 
         deltaWeightInitiation();
         if (super.getMaxIteration() == 0) {
-            while (Double.compare(mse, THRESHOLD) > 0 && Double.compare(mse, Double.POSITIVE_INFINITY) < 0) {
+            while (Double.compare(mse, m_Threshold) > 0 && Double.compare(mse, Double.POSITIVE_INFINITY) < 0) {
                 learning(instances);
                 print1Epoch(iteration);
                 mse = super.calculateMSE();
@@ -96,7 +97,7 @@ public class DeltaRuleBatch extends SingleLayerPerceptron {
                 ++iteration;
             }
         } else { // stop if convergen before reaching max iteration
-            while (iteration <= super.getMaxIteration() && Double.compare(mse, THRESHOLD) > 0
+            while (iteration <= super.getMaxIteration() && Double.compare(mse, m_Threshold) > 0
                     && Double.compare(mse, Double.POSITIVE_INFINITY) < 0) {
                 learning(instances);
                 print1Epoch(iteration);

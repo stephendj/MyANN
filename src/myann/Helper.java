@@ -9,15 +9,18 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import myann.activationfunction.ActivationFunction;
+import myann.nominalconverter.NominalConverter;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 import weka.core.Instances;
 import weka.core.converters.ConverterUtils.DataSource;
 import weka.filters.Filter;
 import weka.filters.supervised.instance.Resample;
+import weka.filters.unsupervised.attribute.Normalize;
 import weka.filters.unsupervised.attribute.Remove;
 
 public class Helper {
@@ -95,6 +98,42 @@ public class Helper {
         return newData;
     }
 
+    private static String inputActivationFunction() {
+        Scanner in = new Scanner(System.in);
+        System.out.print("Masukkan fungsi aktivasi (sign, step, sigmoid, none) : ");
+        return in.nextLine();
+    }
+    
+    private static double inputWeightBias() {
+        Scanner in = new Scanner(System.in);
+        System.out.print("Masukkan nilai weight bias : ");
+        return in.nextDouble();
+    }
+    
+    private static List<Double> inputWeights(int numAttributes, int neuronIndex) {
+        Scanner in = new Scanner(System.in);
+        List<Double> weights = new ArrayList<>();
+        for(int j = 0; j < numAttributes - 1; ++j) {
+            if(neuronIndex == -1) {
+                System.out.print("Masukkan w" + j + " : ");
+            } else {
+                System.out.print("Masukkan w" + j + neuronIndex + " : ");
+            }
+            double inputWeight = in.nextDouble();
+            weights.add(inputWeight);
+        }
+        return weights;
+    }
+    
+    private static Neuron inputNeuron(String activationFunction, double biasWeight, List<Double> weights) {
+        switch(activationFunction) {
+            case "sign"    : return new Neuron(ActivationFunction.SIGN, biasWeight, weights);
+            case "step"    : return new Neuron(ActivationFunction.STEP, biasWeight, weights);
+            case "sigmoid" : return new Neuron(ActivationFunction.SIGMOID, biasWeight, weights);
+            default        : return new Neuron(ActivationFunction.NONE, biasWeight, weights);
+        }
+    }
+    
     /**
      * Build the classifier from dataset, allowed algorithms are perceptron
      * training rule, delta rule batch, delta rule incremental, multi layer
@@ -107,49 +146,125 @@ public class Helper {
      */
     public static Classifier buildClassifier(Instances data, String type) {
         try {
-            int maxIteration = 10;
-            double learningRate = 0.1;
-            double momentum = 0.2;
-            double threshold = 0.01;
-
-            double biasWeight = 0;
-
-            List<Double> inputWeights = new ArrayList<>();
-            inputWeights.add(0.0);
-            inputWeights.add(0.0);
-            inputWeights.add(0.0);
-
+            // Input user
+            Scanner in = new Scanner(System.in);
+            
+            System.out.print("Masukkan jumlah iterasi (0 jika tidak ada maks) : "); 
+            int maxIteration = in.nextInt();
+            
+            System.out.print("Masukkan learning rate : ");
+            double learningRate = in.nextDouble();
+            
+            System.out.print("Masukkan momentum : ");
+            double momentum = in.nextDouble();
+            
+            System.out.print("Masukkan threshold : ");
+            double threshold = in.nextDouble();
+            
+            System.out.print("Pilih metode convert data (numeric, binary_full, binary_partial, none) : ");
+            in.nextLine();
+            String method = in.nextLine();
+            switch(method) {
+                case "numeric"        : data = NominalConverter.nominalToNumeric(data); break;
+                case "binary_full"    : data = NominalConverter.nominalToBinary(data, true); break;
+                case "binary_partial" : data = NominalConverter.nominalToBinary(data, false); break;
+                default               : break;
+            }
+            
+            System.out.print("Apakah data ingin dinormalisasi (y/n) ? ");
+            String isNormalize = in.nextLine();
+            switch(isNormalize) {
+                case "y" : Normalize normalize = new Normalize();
+                           normalize.setInputFormat(data);
+                           data = Filter.useFilter(data, normalize);
+                           break;
+                default  : break;
+            }
+            
             switch (type.toLowerCase()) {
                 case "ptr":
                     List<Neuron> neurons = new ArrayList<>();
-                    neurons.add(new Neuron(ActivationFunction.SIGN, biasWeight, inputWeights));
+                    
+                    if(data.classAttribute().numValues() > 2) { // Multi class
+                        for(int i = 0; i < data.classAttribute().numValues(); ++i) {
+                            String activationFunction = inputActivationFunction();
+                            double biasWeight = inputWeightBias();
+                            List<Double> weights = inputWeights(data.numAttributes(), i);
+                            neurons.add(inputNeuron(activationFunction, biasWeight, weights));
+                        }
+                    } else { // Binary Class
+                        String activationFunction = inputActivationFunction();
+                        double biasWeight = inputWeightBias();
+                        List<Double> weights = inputWeights(data.numAttributes(), -1);
+                        neurons.add(inputNeuron(activationFunction, biasWeight, weights));
+                    }
+                    
                     PerceptronTrainingRule PTR = new PerceptronTrainingRule(maxIteration,
-                        neurons, learningRate, momentum);
+                        neurons, learningRate, momentum, threshold);
                     PTR.buildClassifier(data);
 
                     return PTR;
 
                 case "drb":
                     neurons = new ArrayList<>();
-                    neurons.add(new Neuron(ActivationFunction.NONE, biasWeight, inputWeights));
+                    
+                    if(data.classAttribute().numValues() > 2) { // Multi class
+                        for(int i = 0; i < data.classAttribute().numValues(); ++i) {
+                            String activationFunction = "none";
+                            double biasWeight = inputWeightBias();
+                            List<Double> weights = inputWeights(data.numAttributes(), i);
+                            neurons.add(inputNeuron(activationFunction, biasWeight, weights));
+                        }
+                    } else { // Binary Class
+                        String activationFunction = "none";
+                        double biasWeight = inputWeightBias();
+                        List<Double> weights = inputWeights(data.numAttributes(), -1);
+                        neurons.add(inputNeuron(activationFunction, biasWeight, weights));
+                    }
+                    
                     DeltaRuleBatch DRB = new DeltaRuleBatch(maxIteration,
-                        neurons, learningRate, momentum);
+                        neurons, learningRate, momentum, threshold);
                     DRB.buildClassifier(data);
 
                     return DRB;
 
                 case "dri":
                     neurons = new ArrayList<>();
-                    neurons.add(new Neuron(ActivationFunction.NONE, biasWeight, inputWeights));
+
+                    if(data.classAttribute().numValues() > 2) { // Multi class
+                        for(int i = 0; i < data.classAttribute().numValues(); ++i) {
+                            String activationFunction = "none";
+                            double biasWeight = inputWeightBias();
+                            List<Double> weights = inputWeights(data.numAttributes(), i);
+                            neurons.add(inputNeuron(activationFunction, biasWeight, weights));
+                        }
+                    } else { // Binary Class
+                        String activationFunction = "none";
+                        double biasWeight = inputWeightBias();
+                        List<Double> weights = inputWeights(data.numAttributes(), -1);
+                        neurons.add(inputNeuron(activationFunction, biasWeight, weights));
+                    }
+                    
                     DeltaRuleIncremental DRI = new DeltaRuleIncremental(maxIteration,
-                        neurons, learningRate, momentum);
+                        neurons, learningRate, momentum, threshold);
                     DRI.buildClassifier(data);
 
                     return DRI;
 
                 case "mlp":
-                    Neuron hiddenNeuron1 = new Neuron(ActivationFunction.SIGMOID, 0, inputWeights);
-                    Neuron hiddenNeuron2 = new Neuron(ActivationFunction.SIGMOID, 0, inputWeights);
+                    List<Double> inputWeights1 = new ArrayList<>();
+                    inputWeights1.add(0.0);
+                    inputWeights1.add(0.0);
+                    inputWeights1.add(0.0);
+                    inputWeights1.add(0.0);
+                    List<Double> inputWeights2 = new ArrayList<>();
+                    inputWeights2.add(0.0);
+                    inputWeights2.add(0.0);
+                    inputWeights2.add(0.0);
+                    inputWeights2.add(0.0);
+
+                    Neuron hiddenNeuron1 = new Neuron(ActivationFunction.SIGMOID, 0, inputWeights1);
+                    Neuron hiddenNeuron2 = new Neuron(ActivationFunction.SIGMOID, 0, inputWeights2);
                     List<Neuron> hiddenLayer1 = new ArrayList<>();
                     hiddenLayer1.add(hiddenNeuron1);
                     hiddenLayer1.add(hiddenNeuron2);

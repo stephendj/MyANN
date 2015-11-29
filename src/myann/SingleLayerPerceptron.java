@@ -62,7 +62,8 @@ public abstract class SingleLayerPerceptron extends Classifier {
         } else { // nominal multiclass
             double error;
             for (int i = 0; i < m_Neuron.size(); ++i) {
-                if (i == m_Instances.instance(idx).classIndex()) {
+                m_Neuron.get(i).calculateOutput(m_Instances.instance(idx));
+                if (Double.compare(i, m_Instances.instance(idx).classValue()) == 0) {
                     error = 1 - m_Neuron.get(i).getOutput();
                 } else {
                     error = 0 - m_Neuron.get(i).getOutput();
@@ -95,7 +96,8 @@ public abstract class SingleLayerPerceptron extends Classifier {
         } else { // nominal multiclass
             double error;
             for (int i = 0; i < m_Neuron.size(); ++i) {
-                if (i == m_Instances.instance(idx).classIndex()) {
+                m_Neuron.get(i).calculateOutput(m_Instances.instance(idx));
+                if (Double.compare(i, m_Instances.instance(idx).classValue()) == 0) {
                     error = 1 - m_Neuron.get(i).getOutput();
                 } else {
                     error = 0 - m_Neuron.get(i).getOutput();
@@ -109,7 +111,6 @@ public abstract class SingleLayerPerceptron extends Classifier {
                 deltaWeights.add(deltaWeightsPerNeuron);
             }
         }
-
         return deltaWeights;
     }
 
@@ -124,6 +125,7 @@ public abstract class SingleLayerPerceptron extends Classifier {
             for (int j = 0; j < m_Neuron.get(i).getWeight().size(); ++j) {
                 newWeight.add(m_Neuron.get(i).getWeight().get(j) + deltaWeights.get(i).get(j));
             }
+            
             m_Neuron.get(i).setWeight(newWeight);
             m_Neuron.get(i).setBiasWeight(m_Neuron.get(i).getBiasWeight() + deltaBiasWeight.get(i));
         }
@@ -135,26 +137,26 @@ public abstract class SingleLayerPerceptron extends Classifier {
      */
     public double calculateMSE() {
         double sum = 0;
-
-        int maxOutputIndex = 0;
-        for (int i = 1; i < m_Neuron.size(); ++i) {
-            if (m_Neuron.get(i).getOutput() > m_Neuron.get(maxOutputIndex).getOutput()) {
-                maxOutputIndex = i;
-            }
-        }
+        
         for (int i = 0; i < m_Instances.numInstances(); ++i) {
+            
+            int maxOutputIndex = 0;
+            List<Double> outputsPerInstance = calculateOutput(m_Instances.instance(i));
+            for(int j = 1; j < outputsPerInstance.size(); ++j) {
+                if(outputsPerInstance.get(j) > outputsPerInstance.get(maxOutputIndex)) {
+                    maxOutputIndex = j;
+                }
+            }
 
             double error = 0;
 
             if (m_Instances.classAttribute().isNumeric() || m_Instances.classAttribute().numValues() == 2) {
-                error = m_Instances.instance(i).classValue() - calculateOutput(m_Instances.instance(i)).get(maxOutputIndex);
+                error = m_Instances.instance(i).classValue() - outputsPerInstance.get(maxOutputIndex);
             } else { // nominal multiclass
-                for (int j = 0; j < m_Neuron.size(); ++j) {
-                    if (j == m_Instances.instance(i).classIndex()) {
-                        error = 1 - calculateOutput(m_Instances.instance(i)).get(maxOutputIndex);
-                    } else {
-                        error = 0 - calculateOutput(m_Instances.instance(i)).get(maxOutputIndex);
-                    }
+                if (Double.compare(maxOutputIndex, m_Instances.instance(i).classValue()) == 0) {
+                    error = 1 - outputsPerInstance.get(maxOutputIndex);
+                } else {
+                    error = 0 - outputsPerInstance.get(maxOutputIndex);
                 }
             }
 
