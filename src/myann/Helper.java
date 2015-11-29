@@ -184,16 +184,16 @@ public class Helper {
 
             System.out.print("Pilih metode convert data (numeric, binary_full, binary_partial, none) : ");
             in.nextLine();
-            String method = in.nextLine();
+            method = in.nextLine();
             switch (method) {
                 case "numeric":
                     data = NominalConverter.nominalToNumeric(data);
                     break;
                 case "binary_full":
-                    data = NominalConverter.nominalToBinary(data, true);
+                    data = NominalConverter.nominalToBinary(data, false);
                     break;
                 case "binary_partial":
-                    data = NominalConverter.nominalToBinary(data, false);
+                    data = NominalConverter.nominalToBinary(data, true);
                     break;
                 default:
                     break;
@@ -457,10 +457,10 @@ public class Helper {
                     unlabeled = NominalConverter.nominalToNumeric(unlabeled);
                     break;
                 case "binary_full":
-                    unlabeled = NominalConverter.nominalToBinary(unlabeled, true);
+                    unlabeled = NominalConverter.nominalToBinary(unlabeled, false);
                     break;
                 case "binary_partial":
-                    unlabeled = NominalConverter.nominalToBinary(unlabeled, false);
+                    unlabeled = NominalConverter.nominalToBinary(unlabeled, true);
                     break;
                 default:
                     break;
