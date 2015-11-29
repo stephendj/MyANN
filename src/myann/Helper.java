@@ -51,6 +51,7 @@ public class Helper {
                 data.setClassIndex(data.numAttributes() - 1);
             }
         } catch (Exception e) {
+            e.printStackTrace();
         }
 
         return data;
@@ -354,6 +355,7 @@ public class Helper {
             System.out.println(eval.toClassDetailsString());
             System.out.println(eval.toMatrixString());
         } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -374,7 +376,7 @@ public class Helper {
             System.out.println(eval.toClassDetailsString());
             System.out.println(eval.toMatrixString());
         } catch (Exception e) {
-            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
     }
 
@@ -398,6 +400,7 @@ public class Helper {
             classifier.buildClassifier(trainSet);
             testSetEvaluation(trainSet, classifier, testSet);
         } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -416,6 +419,7 @@ public class Helper {
             oos.flush();
             oos.close();
         } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -435,7 +439,9 @@ public class Helper {
 
             ois.close();
         } catch (FileNotFoundException e) {
+            e.printStackTrace();
         } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
         }
 
         return cls;
@@ -474,6 +480,7 @@ public class Helper {
                 System.out.println(labeled.instance(i));
             }
         } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
