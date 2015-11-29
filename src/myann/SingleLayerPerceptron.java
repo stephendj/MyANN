@@ -197,14 +197,12 @@ public abstract class SingleLayerPerceptron extends Classifier {
                 } else {
                     return 0.0;
                 }
-            } else if (m_Neuron.get(indexMax).getActivationFunction().getName().equals(ActivationFunction.STEP)) {
+            } else { // sigmoid, step, none
                 if ( Double.compare(output.get(indexMax), 0.5) >= 0 ) {
                     return 1.0;
                 } else {
                     return 0.0;
                 }
-            } else { //none
-                return output.get(indexMax);
             }
             
         } else {
