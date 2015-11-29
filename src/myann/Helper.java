@@ -26,6 +26,7 @@ import weka.filters.unsupervised.attribute.Remove;
 public class Helper {
 
     private static String method;
+
     /**
      * Constructor
      */
@@ -105,23 +106,36 @@ public class Helper {
         return in.nextLine();
     }
 
-    private static double inputWeightBias() {
-        Scanner in = new Scanner(System.in);
-        System.out.print("Masukkan nilai weight bias : ");
-        return in.nextDouble();
+    private static double inputWeightBias(boolean isRandomize) {
+        if (isRandomize) {
+            Random random = new Random();
+            return random.nextDouble();
+        } else {
+            Scanner in = new Scanner(System.in);
+            System.out.print("Masukkan nilai weight bias : ");
+            return in.nextDouble();
+        }
     }
 
-    private static List<Double> inputWeights(int numAttributes, int neuronIndex) {
-        Scanner in = new Scanner(System.in);
+    private static List<Double> inputWeights(int numAttributes, int neuronIndex, boolean isRandomize) {
         List<Double> weights = new ArrayList<>();
-        for (int j = 0; j < numAttributes - 1; ++j) {
-            if (neuronIndex == -1) {
-                System.out.print("Masukkan w" + j + " : ");
-            } else {
-                System.out.print("Masukkan w" + j + neuronIndex + " : ");
+        if (isRandomize) {
+            Random random = new Random();
+            for (int j = 0; j < numAttributes - 1; ++j) {
+                weights.add(random.nextDouble());
             }
-            double inputWeight = in.nextDouble();
-            weights.add(inputWeight);
+        } else {
+            Scanner in = new Scanner(System.in);
+
+            for (int j = 0; j < numAttributes - 1; ++j) {
+                if (neuronIndex == -1) {
+                    System.out.print("Masukkan w" + j + " : ");
+                } else {
+                    System.out.print("Masukkan w" + j + neuronIndex + " : ");
+                }
+                double inputWeight = in.nextDouble();
+                weights.add(inputWeight);
+            }
         }
         return weights;
     }
@@ -151,6 +165,8 @@ public class Helper {
      */
     public static Classifier buildClassifier(Instances data, String type) {
         try {
+            Random random = new Random();
+
             // Input user
             Scanner in = new Scanner(System.in);
 
@@ -195,11 +211,13 @@ public class Helper {
                     break;
             }
 
+            System.out.print("Apakah weight ingin diinisialisasi (y/n) ? ");
+            boolean isRandomize = in.nextLine().equals("y") ? false : true;
+
 //            int maxIteration = 10000;
 //            double learningRate = 0.1;
 //            double momentum = 0.1;
 //            double threshold = 0.01;
-
             switch (type.toLowerCase()) {
                 case "ptr":
                     List<Neuron> neurons = new ArrayList<>();
@@ -207,14 +225,14 @@ public class Helper {
                     if (data.classAttribute().numValues() > 2) { // Multi class
                         for (int i = 0; i < data.classAttribute().numValues(); ++i) {
                             String activationFunction = inputActivationFunction();
-                            double biasWeight = inputWeightBias();
-                            List<Double> weights = inputWeights(data.numAttributes(), i);
+                            double biasWeight = inputWeightBias(isRandomize);
+                            List<Double> weights = inputWeights(data.numAttributes(), i, isRandomize);
                             neurons.add(inputNeuron(activationFunction, biasWeight, weights));
                         }
                     } else { // Binary Class
                         String activationFunction = inputActivationFunction();
-                        double biasWeight = inputWeightBias();
-                        List<Double> weights = inputWeights(data.numAttributes(), -1);
+                        double biasWeight = inputWeightBias(isRandomize);
+                        List<Double> weights = inputWeights(data.numAttributes(), -1, isRandomize);
                         neurons.add(inputNeuron(activationFunction, biasWeight, weights));
                     }
 
@@ -231,14 +249,14 @@ public class Helper {
                     if (data.classAttribute().numValues() > 2) { // Multi class
                         for (int i = 0; i < data.classAttribute().numValues(); ++i) {
                             String activationFunction = "none";
-                            double biasWeight = inputWeightBias();
-                            List<Double> weights = inputWeights(data.numAttributes(), i);
+                            double biasWeight = inputWeightBias(isRandomize);
+                            List<Double> weights = inputWeights(data.numAttributes(), i, isRandomize);
                             neurons.add(inputNeuron(activationFunction, biasWeight, weights));
                         }
                     } else { // Binary Class
                         String activationFunction = "none";
-                        double biasWeight = inputWeightBias();
-                        List<Double> weights = inputWeights(data.numAttributes(), -1);
+                        double biasWeight = inputWeightBias(isRandomize);
+                        List<Double> weights = inputWeights(data.numAttributes(), -1, isRandomize);
                         neurons.add(inputNeuron(activationFunction, biasWeight, weights));
                     }
 
@@ -254,14 +272,14 @@ public class Helper {
                     if (data.classAttribute().numValues() > 2) { // Multi class
                         for (int i = 0; i < data.classAttribute().numValues(); ++i) {
                             String activationFunction = "none";
-                            double biasWeight = inputWeightBias();
-                            List<Double> weights = inputWeights(data.numAttributes(), i);
+                            double biasWeight = inputWeightBias(isRandomize);
+                            List<Double> weights = inputWeights(data.numAttributes(), i, isRandomize);
                             neurons.add(inputNeuron(activationFunction, biasWeight, weights));
                         }
                     } else { // Binary Class
                         String activationFunction = "none";
-                        double biasWeight = inputWeightBias();
-                        List<Double> weights = inputWeights(data.numAttributes(), -1);
+                        double biasWeight = inputWeightBias(isRandomize);
+                        List<Double> weights = inputWeights(data.numAttributes(), -1, isRandomize);
                         neurons.add(inputNeuron(activationFunction, biasWeight, weights));
                     }
 
@@ -272,38 +290,37 @@ public class Helper {
                     return DRI;
 
                 case "mlp":
-                    data = NominalConverter.nominalToNumeric(data);
-
                     List<List<Neuron>> hiddenLayers = new ArrayList<>();
                     List<Neuron> outputLayer = new ArrayList<>();
 
-//                    Scanner in = new Scanner(System.in);
+                    // read hidden layers weights from stdin
                     System.out.print("Masukkan jumlah layer hidden layer : ");
                     int jumlahLayer = in.nextInt();
 
                     for (int i = 0; i < jumlahLayer; ++i) {
-                        System.out.print("Masukkan jumlah neuron hidden layer ke-" + i + " : ");
+                        System.out.print("Masukkan jumlah neuron hidden layer " + i + " : ");
                         int jumlahSetiapLayer = in.nextInt();
 
                         List<Neuron> hiddenLayer = new ArrayList<>();
                         for (int j = 0; j < jumlahSetiapLayer; ++j) {
-                            double biasWeight = inputWeightBias();
-                            List<Double> inputWeights = inputWeights(data.numAttributes(), jumlahSetiapLayer > 1 ? j : -1);
+                            double biasWeight = inputWeightBias(isRandomize);
+                            List<Double> inputWeights = inputWeights(data.numAttributes(), jumlahSetiapLayer > 1 ? j : -1, isRandomize);
                             hiddenLayer.add(inputNeuron(ActivationFunction.SIGMOID, biasWeight, inputWeights));
                         }
                         hiddenLayers.add(hiddenLayer);
                     }
 
-                    System.out.println("Jumlah output layer : " + ((data.classAttribute().numValues() > 2) ? data.classAttribute().numValues() : 1));
-                    if (data.classAttribute().numValues() > 2) { // Multi class
+                    // read output layer weights from stdin
+                    System.out.println("Jumlah neuron output layer : " + ((data.classAttribute().numValues() > 2) ? data.classAttribute().numValues() : 1));
+                    if (data.classAttribute().numValues() > 2) { // multiclass
                         for (int i = 0; i < data.classAttribute().numValues(); ++i) {
-                            double biasWeight = inputWeightBias();
-                            List<Double> outputWeights = inputWeights(hiddenLayers.get(hiddenLayers.size() - 1).size() + 1, i);
+                            double biasWeight = inputWeightBias(isRandomize);
+                            List<Double> outputWeights = inputWeights(hiddenLayers.get(hiddenLayers.size() - 1).size() + 1, i, isRandomize);
                             outputLayer.add(inputNeuron(ActivationFunction.SIGMOID, biasWeight, outputWeights));
                         }
-                    } else { // Binary Class
-                        double biasWeight = inputWeightBias();
-                        List<Double> outputWeights = inputWeights(hiddenLayers.get(hiddenLayers.size() - 1).size() + 1, -1);
+                    } else { // binary class
+                        double biasWeight = inputWeightBias(isRandomize);
+                        List<Double> outputWeights = inputWeights(hiddenLayers.get(hiddenLayers.size() - 1).size() + 1, -1, isRandomize);
                         outputLayer.add(inputNeuron(ActivationFunction.SIGMOID, biasWeight, outputWeights));
                     }
 
@@ -434,13 +451,19 @@ public class Helper {
         try {
             Instances unlabeled = DataSource.read(file);
             unlabeled.setClassIndex(unlabeled.numAttributes() - 1);
-            
-            switch(method) {
-                case "numeric"        : unlabeled = NominalConverter.nominalToNumeric(unlabeled); break;
-                case "binary_full"    : unlabeled = NominalConverter.nominalToBinary(unlabeled, true); 
-                                        break;
-                case "binary_partial" : unlabeled = NominalConverter.nominalToBinary(unlabeled, false); break;
-                default               : break;
+
+            switch (method) {
+                case "numeric":
+                    unlabeled = NominalConverter.nominalToNumeric(unlabeled);
+                    break;
+                case "binary_full":
+                    unlabeled = NominalConverter.nominalToBinary(unlabeled, true);
+                    break;
+                case "binary_partial":
+                    unlabeled = NominalConverter.nominalToBinary(unlabeled, false);
+                    break;
+                default:
+                    break;
             }
             Instances labeled = new Instances(unlabeled);
 
@@ -451,7 +474,6 @@ public class Helper {
                 System.out.println(labeled.instance(i));
             }
         } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 }
