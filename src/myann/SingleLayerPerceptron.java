@@ -2,6 +2,7 @@ package myann;
 
 import java.util.ArrayList;
 import java.util.List;
+import myann.activationfunction.ActivationFunction;
 import weka.classifiers.Classifier;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -14,7 +15,7 @@ public abstract class SingleLayerPerceptron extends Classifier {
     private List<Neuron> m_Neuron;
     private double m_LearningRate;
     private double m_Momentum;
-
+    
     /**
      *
      * @param m_MaxIteration maximum iteration
@@ -188,10 +189,31 @@ public abstract class SingleLayerPerceptron extends Classifier {
         }
         if (instance.classAttribute().isNumeric()) {
             return output.get(indexMax);
+        } else if (instance.classAttribute().numValues() == 2) {
+            if (m_Neuron.get(indexMax).getActivationFunction().getName().equals(ActivationFunction.SIGN) || 
+                    m_Neuron.get(indexMax).getActivationFunction().getName().equals(ActivationFunction.SIGMOID)) {
+                if ( Double.compare(output.get(indexMax), 0) >= 0 ) {
+                    return 1.0;
+                } else {
+                    return 0.0;
+                }
+            } else if (m_Neuron.get(indexMax).getActivationFunction().getName().equals(ActivationFunction.STEP)) {
+                if ( Double.compare(output.get(indexMax), 0.5) >= 0 ) {
+                    return 1.0;
+                } else {
+                    return 0.0;
+                }
+            } else { //none
+                return output.get(indexMax);
+            }
+            
         } else {
             return indexMax;
         }
+        
+        
     }
+    
 
     /**
      * print the model of neuron

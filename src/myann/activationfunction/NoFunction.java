@@ -7,4 +7,8 @@ public class NoFunction extends ActivationFunction {
         return net;
     }
     
+    @Override
+    public String getName (){
+        return  ActivationFunction.NONE;
+    }
 }

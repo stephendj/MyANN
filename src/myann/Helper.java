@@ -25,6 +25,7 @@ import weka.filters.unsupervised.attribute.Remove;
 
 public class Helper {
 
+    private static String method;
     /**
      * Constructor
      */
@@ -194,6 +195,11 @@ public class Helper {
                     break;
             }
 
+//            int maxIteration = 10000;
+//            double learningRate = 0.1;
+//            double momentum = 0.1;
+//            double threshold = 0.01;
+
             switch (type.toLowerCase()) {
                 case "ptr":
                     List<Neuron> neurons = new ArrayList<>();
@@ -214,6 +220,7 @@ public class Helper {
 
                     PerceptronTrainingRule PTR = new PerceptronTrainingRule(maxIteration,
                         neurons, learningRate, momentum, threshold);
+                    System.out.println(data);
                     PTR.buildClassifier(data);
 
                     return PTR;
@@ -427,7 +434,14 @@ public class Helper {
         try {
             Instances unlabeled = DataSource.read(file);
             unlabeled.setClassIndex(unlabeled.numAttributes() - 1);
-
+            
+            switch(method) {
+                case "numeric"        : unlabeled = NominalConverter.nominalToNumeric(unlabeled); break;
+                case "binary_full"    : unlabeled = NominalConverter.nominalToBinary(unlabeled, true); 
+                                        break;
+                case "binary_partial" : unlabeled = NominalConverter.nominalToBinary(unlabeled, false); break;
+                default               : break;
+            }
             Instances labeled = new Instances(unlabeled);
 
             // label instances
@@ -437,6 +451,7 @@ public class Helper {
                 System.out.println(labeled.instance(i));
             }
         } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
