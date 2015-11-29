@@ -14,7 +14,7 @@ public abstract class SingleLayerPerceptron extends Classifier {
     private List<Neuron> m_Neuron;
     private double m_LearningRate;
     private double m_Momentum;
-
+    
     /**
      *
      * @param m_MaxIteration maximum iteration
