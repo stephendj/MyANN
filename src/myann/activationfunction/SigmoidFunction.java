@@ -6,5 +6,8 @@ public class SigmoidFunction extends ActivationFunction {
     public double calculateOutput(double net) {
         return (1 / (1 + Math.exp(-net)));
     }
-
+    
+    public String getName (){
+        return  ActivationFunction.SIGMOID;
+    }
 }
