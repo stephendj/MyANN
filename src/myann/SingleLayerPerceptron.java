@@ -188,6 +188,12 @@ public abstract class SingleLayerPerceptron extends Classifier {
         }
         if (instance.classAttribute().isNumeric()) {
             return output.get(indexMax);
+        } else if (instance.classAttribute().numValues() == 2) {
+            if ( Double.compare(output.get(indexMax), 0.5) >= 0 ) {
+                return 1;
+            } else {
+                return 0;
+            }
         } else {
             return indexMax;
         }
