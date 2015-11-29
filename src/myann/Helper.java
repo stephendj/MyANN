@@ -26,6 +26,7 @@ import weka.filters.unsupervised.attribute.Remove;
 public class Helper {
 
     private static String method;
+    private static String isNormalize;
 
     /**
      * Constructor
@@ -201,7 +202,7 @@ public class Helper {
             }
 
             System.out.print("Apakah data ingin dinormalisasi (y/n) ? ");
-            String isNormalize = in.nextLine();
+            isNormalize = in.nextLine();
             switch (isNormalize) {
                 case "y":
                     Normalize normalize = new Normalize();
@@ -211,6 +212,8 @@ public class Helper {
                 default:
                     break;
             }
+            
+            System.out.println(data);
 
             System.out.print("Apakah weight ingin diinisialisasi (y/n) ? ");
             boolean isRandomize = in.nextLine().equals("y") ? false : true;
@@ -471,6 +474,17 @@ public class Helper {
                 default:
                     break;
             }
+            
+            switch (isNormalize) {
+                case "y":
+                    Normalize normalize = new Normalize();
+                    normalize.setInputFormat(unlabeled);
+                    unlabeled = Filter.useFilter(unlabeled, normalize);
+                    break;
+                default:
+                    break;
+            }
+            
             Instances labeled = new Instances(unlabeled);
 
             // label instances
