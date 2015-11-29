@@ -25,6 +25,7 @@ import weka.filters.unsupervised.attribute.Remove;
 
 public class Helper {
 
+    private static String method;
     /**
      * Constructor
      */
@@ -146,40 +147,45 @@ public class Helper {
      */
     public static Classifier buildClassifier(Instances data, String type) {
         try {
-            // Input user
-            Scanner in = new Scanner(System.in);
-            
-            System.out.print("Masukkan jumlah iterasi (0 jika tidak ada maks) : "); 
-            int maxIteration = in.nextInt();
-            
-            System.out.print("Masukkan learning rate : ");
-            double learningRate = in.nextDouble();
-            
-            System.out.print("Masukkan momentum : ");
-            double momentum = in.nextDouble();
-            
-            System.out.print("Masukkan threshold : ");
-            double threshold = in.nextDouble();
-            
+//            // Input user
+              Scanner in = new Scanner(System.in);
+//            
+//            System.out.print("Masukkan jumlah iterasi (0 jika tidak ada maks) : "); 
+//            int maxIteration = in.nextInt();
+//            
+//            System.out.print("Masukkan learning rate : ");
+//            double learningRate = in.nextDouble();
+//            
+//            System.out.print("Masukkan momentum : ");
+//            double momentum = in.nextDouble();
+//            
+//            System.out.print("Masukkan threshold : ");
+//            double threshold = in.nextDouble();
+//            
             System.out.print("Pilih metode convert data (numeric, binary_full, binary_partial, none) : ");
-            in.nextLine();
-            String method = in.nextLine();
+            method = in.nextLine();
             switch(method) {
                 case "numeric"        : data = NominalConverter.nominalToNumeric(data); break;
-                case "binary_full"    : data = NominalConverter.nominalToBinary(data, true); break;
+                case "binary_full"    : data = NominalConverter.nominalToBinary(data, true); 
+                                        break;
                 case "binary_partial" : data = NominalConverter.nominalToBinary(data, false); break;
                 default               : break;
             }
+//            
+//            System.out.print("Apakah data ingin dinormalisasi (y/n) ? ");
+//            String isNormalize = in.nextLine();
+//            switch(isNormalize) {
+//                case "y" : Normalize normalize = new Normalize();
+//                           normalize.setInputFormat(data);
+//                           data = Filter.useFilter(data, normalize);
+//                           break;
+//                default  : break;
+//            }
+            int maxIteration = 1000;
+            double learningRate = 0.1;
+            double momentum = 0.2;
+            double threshold = 0.01;
             
-            System.out.print("Apakah data ingin dinormalisasi (y/n) ? ");
-            String isNormalize = in.nextLine();
-            switch(isNormalize) {
-                case "y" : Normalize normalize = new Normalize();
-                           normalize.setInputFormat(data);
-                           data = Filter.useFilter(data, normalize);
-                           break;
-                default  : break;
-            }
             
             switch (type.toLowerCase()) {
                 case "ptr":
@@ -201,6 +207,7 @@ public class Helper {
                     
                     PerceptronTrainingRule PTR = new PerceptronTrainingRule(maxIteration,
                         neurons, learningRate, momentum, threshold);
+                    System.out.println(data);
                     PTR.buildClassifier(data);
 
                     return PTR;
@@ -407,7 +414,14 @@ public class Helper {
         try {
             Instances unlabeled = DataSource.read(file);
             unlabeled.setClassIndex(unlabeled.numAttributes() - 1);
-
+            
+            switch(method) {
+                case "numeric"        : unlabeled = NominalConverter.nominalToNumeric(unlabeled); break;
+                case "binary_full"    : unlabeled = NominalConverter.nominalToBinary(unlabeled, true); 
+                                        break;
+                case "binary_partial" : unlabeled = NominalConverter.nominalToBinary(unlabeled, false); break;
+                default               : break;
+            }
             Instances labeled = new Instances(unlabeled);
 
             // label instances
@@ -417,6 +431,7 @@ public class Helper {
                 System.out.println(labeled.instance(i));
             }
         } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
