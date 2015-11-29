@@ -369,7 +369,6 @@ public class MultiLayerPerceptron extends Classifier {
                 maxOutputIndex = i;
             }
         }
-        System.out.println("maxoutputindex " + maxOutputIndex);
 
         // classify instance
         if (instance.classAttribute().isNumeric()) {
