@@ -1,5 +1,6 @@
 package myann;
 
+import java.io.Serializable;
 import myann.activationfunction.ActivationFunction;
 import myann.activationfunction.SignFunction;
 import myann.activationfunction.StepFunction;
@@ -10,7 +11,7 @@ import java.util.Random;
 import myann.activationfunction.NoFunction;
 import weka.core.Instance;
 
-public class Neuron {
+public class Neuron implements Serializable {
 
     private List<Double> m_Weight = new ArrayList<>();
     private double m_Bias = 1;

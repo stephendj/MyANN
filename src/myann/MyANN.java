@@ -6,8 +6,8 @@ import weka.core.Instances;
 
 public class MyANN {
 
-    private static final String DATASET = "data/weather.numeric.arff";
-    private static final String DATASET_UNLABELED = "data/weather.numeric.unlabeled.arff";
+    private static final String DATASET = "data/iris.arff";
+    private static final String DATASET_UNLABELED = "data/iris.unlabeled.arff";
     
     public static void main(String[] args) throws Exception {
         Instances instances = Helper.loadDataFromFile(DATASET);

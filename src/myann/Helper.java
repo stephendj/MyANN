@@ -244,6 +244,8 @@ public class Helper {
                         neurons, learningRate, momentum, threshold);
                     System.out.println(data);
                     PTR.buildClassifier(data);
+                    
+                    Helper.tenFoldCrossValidation(data, PTR);
 
                     return PTR;
 
@@ -267,6 +269,8 @@ public class Helper {
                     DeltaRuleBatch DRB = new DeltaRuleBatch(maxIteration,
                         neurons, learningRate, momentum, threshold);
                     DRB.buildClassifier(data);
+                    
+                    Helper.tenFoldCrossValidation(data, DRB);
 
                     return DRB;
 
@@ -291,6 +295,7 @@ public class Helper {
                         neurons, learningRate, momentum, threshold);
                     DRI.buildClassifier(data);
 
+                    Helper.tenFoldCrossValidation(data, DRI);
                     return DRI;
 
                 case "mlp":
@@ -331,7 +336,8 @@ public class Helper {
                     MultiLayerPerceptron MLP = new MultiLayerPerceptron(hiddenLayers, outputLayer, data, maxIteration,
                         learningRate, momentum, threshold);
                     MLP.buildClassifier(data);
-
+                    
+                    Helper.tenFoldCrossValidation(data, MLP);
                     return MLP;
             }
         } catch (Exception ex) {

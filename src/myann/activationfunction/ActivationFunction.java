@@ -1,6 +1,8 @@
 package myann.activationfunction;
 
-public abstract class ActivationFunction {
+import java.io.Serializable;
+
+public abstract class ActivationFunction implements Serializable {
 
     public static final String NONE = "none";
     public static final String SIGN = "sign";
